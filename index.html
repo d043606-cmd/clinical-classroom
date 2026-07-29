@@ -683,7 +683,7 @@ document.getElementById('quickTags').innerHTML=QUICK_TAGS.map(t=>
 document.getElementById('queryInput').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSearch();}
 });
-loadLiveStock();
+loadLiveStock().then(()=>{ if(typeof renderBrowse==='function') renderBrowse(); });
 track('pageview','進入系統');
 
 async function loadLiveStock(){
