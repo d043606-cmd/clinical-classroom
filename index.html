@@ -658,12 +658,19 @@ const QUICK_TAGS=Object.keys(SEARCH_MAP);
 const ALL_CATS=["全部",...new Set(TOOLS.map(t=>t.cat))];
 
 // ===== 狀態 =====
-let cart={}, liveStock={...STOCK};
+let cart={}, liveStock={...STOCK}, liveMaxStock={};
 let browseInited=false, browseFilterVal="全部";
 let pinBuf="", adminLoggedIn=false, currentAdminName="";
 
+// 取得台灣時區的「今天」日期字串（yyyy-mm-dd）
+// 注意：不要用 new Date().toISOString().split('T')[0]，那會先轉成 UTC 時間，
+// 台灣時間午夜到早上8點之間會誤判成前一天，造成當天借用的教具被錯判逾期
+function todayTaipei(){
+  return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Taipei'});
+}
+
 // 初始化
-const today=new Date().toISOString().split('T')[0];
+const today=todayTaipei();
 document.getElementById('f_borrow_date').value=today;
 document.getElementById('f_borrow_date').min=today;
 document.getElementById('f_return_date').min=today;
@@ -684,7 +691,23 @@ async function loadLiveStock(){
   try{
     const res=await fetch(APPS_SCRIPT_URL+"?action=getStock",{method:"GET",mode:"cors"});
     const data=await res.json();
-    if(data.stock) Object.assign(liveStock,data.stock);
+    // 後端回傳的是「即時庫存」工作表的列陣列（items），欄位為教具名稱/可借數量，
+    // 不是直接可用的 {id:數量} 物件，這裡依教具名稱比對 TOOLS，換算成 liveStock[id]
+    if(data.success && Array.isArray(data.items)){
+      const byName = {};
+      const byNameMax = {};
+      data.items.forEach(row=>{
+        const name = row['教具名稱'];
+        const avail = row['目前可借']; // 試算表實際欄名（原本誤寫成「可借數量」）
+        const max = row['最大庫存'];
+        if(name!==undefined && avail!==undefined) byName[name]=Number(avail);
+        if(name!==undefined && max!==undefined) byNameMax[name]=Number(max);
+      });
+      TOOLS.forEach(t=>{
+        if(byName[t.name]!==undefined) liveStock[t.id]=byName[t.name];
+        if(byNameMax[t.name]!==undefined) liveMaxStock[t.id]=byNameMax[t.name]; // 以試算表真實的「最大庫存」為準，不再用前端寫死的 STOCK 常數
+      });
+    }
   }catch(e){}
 }
 
@@ -1107,14 +1130,18 @@ async function loadAdminData(){
     return;
   }
   try{
-    const res=await fetch(APPS_SCRIPT_URL+"?action=getPendingReturns",{method:"GET",mode:"cors",redirect:"follow"});
+    const [res] = await Promise.all([
+      fetch(APPS_SCRIPT_URL+"?action=getPendingReturns",{method:"GET",mode:"cors",redirect:"follow"}),
+      loadLiveStock() // 同步刷新即時庫存，避免確認歸還後數字沒跟著變
+    ]);
     const data=await res.json();
+    lastPendingRecords = data.items||[]; // 快取目前清單，供確認歸還後局部刷新庫存用
     renderAdminList(data.items||[]);
     initCalendar(data.items||[]);
     stockData = buildStockData(data.items||[]);
     renderStockTable();
     const items=data.items||[];
-    const today2=new Date().toISOString().split('T')[0];
+    const today2=todayTaipei();
     document.getElementById('statBorrowing').textContent=items.length;
     document.getElementById('statToday').textContent=items.filter(r=>r.returnDate===today2).length;
     document.getElementById('statOverdue').textContent=items.filter(r=>r.overdue).length;
@@ -1128,7 +1155,7 @@ function renderAdminList(records){
     document.getElementById('returnList').innerHTML='<div class="admin-empty">✅ 目前沒有待確認歸還的教具</div>';
     return;
   }
-  const today=new Date().toISOString().split('T')[0];
+  const today=todayTaipei();
   document.getElementById('returnList').innerHTML=records.map(r=>{
     const isOverdue=r.overdue||(r.returnDate<today);
     const overdueDays=r.overdueDays||Math.max(0,Math.floor((new Date(today)-new Date(r.returnDate))/86400000));
@@ -1162,17 +1189,90 @@ async function confirmReturn(token,btn){
     return;
   }
   try{
-    const form=new FormData();
-    form.append('action','adminConfirmReturn');
-    form.append('token',token);
-    form.append('adminName',currentAdminName);
-    await fetch(APPS_SCRIPT_URL,{method:'POST',body:form,mode:'no-cors'});
-    btn.textContent='✅ 已確認歸還，庫存已更新';
-    btn.className='btn-confirm-return done';
+    const res=await fetch(APPS_SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({action:'returnItem',token:token})
+    });
+    const result=await res.json();
+    alert('【診斷】'+(result.message||'(無message)')); // ← 暫時加的，看完診斷資訊後記得刪掉
+    if(result.success){
+      showConfirmedCard(token,btn);
+    }else{
+      btn.textContent='確認已點收歸還';
+      btn.disabled=false;
+      alert('操作失敗：'+(result.message||'未知錯誤'));
+    }
   }catch(e){
     btn.textContent='確認已點收歸還';
     btn.disabled=false;
-    alert('操作失敗，請重試');
+    alert('操作失敗，請重試：'+e.toString());
+  }
+}
+
+// 確認歸還成功後，把按鈕換成「完成＋復原」，並提供 10 分鐘內可撤銷的視窗
+function showConfirmedCard(token,btn){
+  const wrap=document.createElement('div');
+  wrap.style.display='flex';
+  wrap.style.gap='8px';
+  wrap.style.marginTop='4px';
+
+  const doneBtn=document.createElement('button');
+  doneBtn.className='btn-confirm-return done';
+  doneBtn.style.flex='1';
+  doneBtn.disabled=true;
+  doneBtn.textContent='✅ 已確認歸還，庫存已更新';
+
+  const undoBtn=document.createElement('button');
+  undoBtn.className='btn-confirm-return';
+  undoBtn.style.flex='0 0 auto';
+  undoBtn.style.background='#f8fafc';
+  undoBtn.style.color='#64748b';
+  undoBtn.style.border='1px solid #e2e8f0';
+  undoBtn.textContent='↩️ 復原';
+  undoBtn.onclick=()=>undoConfirmReturn(token,wrap,btn);
+
+  btn.replaceWith(wrap);
+  wrap.appendChild(doneBtn);
+  wrap.appendChild(undoBtn);
+
+  // 只局部刷新庫存數字（從快取清單中移除這筆，並重抓即時庫存），
+  // 不整批重繪「待確認歸還」清單，避免剛顯示的復原按鈕被立刻清掉
+  lastPendingRecords = lastPendingRecords.filter(r=>r.token!==token);
+  loadLiveStock().then(()=>{
+    stockData = buildStockData(lastPendingRecords);
+    renderStockTable();
+  });
+  const items=lastPendingRecords;
+  document.getElementById('statBorrowing').textContent=items.length;
+  document.getElementById('statOverdue').textContent=items.filter(r=>r.overdue).length;
+
+  // 10 分鐘後自動隱藏「復原」按鈕，並把這張卡片從畫面移除、同步整批重新整理清單
+  setTimeout(()=>{
+    if(undoBtn.isConnected){
+      undoBtn.style.display='none';
+      loadAdminData();
+    }
+  },10*60*1000);
+}
+
+async function undoConfirmReturn(token,wrap,originalBtn){
+  if(!confirm('確定要復原這筆歸還紀錄嗎？狀態將改回「待確認」，庫存也會扣回借出中。'))return;
+  wrap.innerHTML='<div style="flex:1;text-align:center;color:#64748b;font-size:.85rem;padding:8px;">⏳ 復原中…</div>';
+  try{
+    const res=await fetch(APPS_SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({action:'undoReturn',token:token})
+    });
+    const result=await res.json();
+    if(result.success){
+      loadAdminData(); // 直接整批重新載入，該筆會重新出現在待確認清單
+    }else{
+      alert('復原失敗：'+(result.message||'未知錯誤'));
+      loadAdminData();
+    }
+  }catch(e){
+    alert('復原失敗，請重試：'+e.toString());
+    loadAdminData();
   }
 }
 
@@ -1211,6 +1311,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox()
 // ===== 庫存總表 =====
 let stockFilter = 'all';
 let stockData = [];
+let lastPendingRecords = [];
 
 function setStockFilter(f){
   stockFilter = f;
@@ -1226,10 +1327,10 @@ function setStockFilter(f){
 }
 
 function buildStockData(records){
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayTaipei();
   const list = TOOLS.map(t => {
     const available = liveStock[t.id] !== undefined ? liveStock[t.id] : (STOCK[t.id]||1);
-    const maxStock = STOCK[t.id] || 1;
+    const maxStock = liveMaxStock[t.id] !== undefined ? liveMaxStock[t.id] : (STOCK[t.id]||1); // 優先用試算表真實的「最大庫存」
     const borrowers = records.filter(r => r.items && r.items.includes(t.name));
     let status = available > 0 ? 'ok' : 'out';
     let borrowerName = '—', returnDate = '—';
@@ -1350,7 +1451,7 @@ function renderCalendar(){
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = todayTaipei();
 
   // 建立事件日期 map
   const eventMap = {};
@@ -1406,7 +1507,7 @@ function showCalDetail(dateStr){
   const evts = [];
   calEvents.forEach(r => {
     if(r.returnDate === dateStr){
-      const isOverdue = r.returnDate < new Date().toISOString().split('T')[0];
+      const isOverdue = r.returnDate < todayTaipei();
       evts.push({label: isOverdue?'🚨 逾期未還':'⚠️ 今日到期', record:r, color: isOverdue?'#ef4444':'#f59e0b'});
     }
     if(r.borrowDate === dateStr){
