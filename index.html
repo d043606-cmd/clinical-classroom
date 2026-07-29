@@ -683,7 +683,15 @@ document.getElementById('quickTags').innerHTML=QUICK_TAGS.map(t=>
 document.getElementById('queryInput').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSearch();}
 });
-loadLiveStock().then(()=>{ if(typeof renderBrowse==='function') renderBrowse(); });
+loadLiveStock().then(()=>{
+  if(typeof renderBrowse==='function') renderBrowse();
+  // 若「AI 推薦」搜尋結果已經先畫出來（例如使用者點了快速標籤），資料抓回來後要重新搜尋一次刷新卡片庫存
+  const resultsBox=document.getElementById('resultsBox');
+  const queryInput=document.getElementById('queryInput');
+  if(resultsBox && resultsBox.style.display==='block' && queryInput && queryInput.value.trim() && typeof doSearch==='function'){
+    doSearch();
+  }
+});
 track('pageview','進入系統');
 
 async function loadLiveStock(){
