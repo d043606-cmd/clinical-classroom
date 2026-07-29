@@ -689,7 +689,7 @@ track('pageview','進入系統');
 async function loadLiveStock(){
   if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL==="YOUR_APPS_SCRIPT_URL_HERE") return;
   try{
-    const res=await fetch(APPS_SCRIPT_URL+"?action=getStock",{method:"GET",mode:"cors"});
+    const res=await fetch(APPS_SCRIPT_URL+"?action=getStock&_ts="+Date.now(),{method:"GET",mode:"cors",cache:"no-store"});
     const data=await res.json();
     // 後端回傳的是「即時庫存」工作表的列陣列（items），欄位為教具名稱/可借數量，
     // 不是直接可用的 {id:數量} 物件，這裡依教具名稱比對 TOOLS，換算成 liveStock[id]
@@ -1131,7 +1131,7 @@ async function loadAdminData(){
   }
   try{
     const [res] = await Promise.all([
-      fetch(APPS_SCRIPT_URL+"?action=getPendingReturns",{method:"GET",mode:"cors",redirect:"follow"}),
+      fetch(APPS_SCRIPT_URL+"?action=getPendingReturns&_ts="+Date.now(),{method:"GET",mode:"cors",redirect:"follow",cache:"no-store"}),
       loadLiveStock() // 同步刷新即時庫存，避免確認歸還後數字沒跟著變
     ]);
     const data=await res.json();
