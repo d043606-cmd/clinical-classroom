@@ -390,6 +390,12 @@ textarea::placeholder{color:#94a3b8;}
       <div class="admin-empty">⏳ 載入中…</div>
     </div>
 
+    <!-- 已預約清單（尚未到借用日、還沒扣庫存的預約） -->
+    <div class="admin-section-title" style="margin-top:20px;">📅 已預約清單</div>
+    <div class="return-list" id="reservationList">
+      <div class="admin-empty">⏳ 載入中…</div>
+    </div>
+
     <!-- 教具庫存總表 -->
     <div class="admin-section-title" style="margin-top:20px;">📦 教具庫存即時總表</div>
     <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07);margin-bottom:14px;">
@@ -1142,11 +1148,14 @@ async function loadAdminData(){
     return;
   }
   try{
-    const [res] = await Promise.all([
+    const [res, resvRes] = await Promise.all([
       fetch(APPS_SCRIPT_URL+"?action=getPendingReturns&_ts="+Date.now(),{method:"GET",mode:"cors",redirect:"follow",cache:"no-store"}),
+      fetch(APPS_SCRIPT_URL+"?action=getReservations&_ts="+Date.now(),{method:"GET",mode:"cors",redirect:"follow",cache:"no-store"}),
       loadLiveStock() // 同步刷新即時庫存，避免確認歸還後數字沒跟著變
     ]);
     const data=await res.json();
+    const resvData=await resvRes.json();
+    renderReservationList(resvData.items||[]);
     lastPendingRecords = data.items||[]; // 快取目前清單，供確認歸還後局部刷新庫存用
     renderAdminList(data.items||[]);
     initCalendar(data.items||[]);
@@ -1159,6 +1168,7 @@ async function loadAdminData(){
     document.getElementById('statOverdue').textContent=items.filter(r=>r.overdue).length;
   }catch(e){
     document.getElementById('returnList').innerHTML='<div class="admin-empty">載入失敗，請檢查網路連線</div>';
+    document.getElementById('reservationList').innerHTML='<div class="admin-empty">載入失敗，請檢查網路連線</div>';
   }
 }
 
@@ -1187,6 +1197,32 @@ function renderAdminList(records){
       <button class="btn-confirm-return" id="retBtn_${r.token}" onclick="confirmReturn('${r.token}',this)">
         ✅ 確認已點收歸還
       </button>
+    </div>`;
+  }).join('');
+}
+
+// 已預約清單：唯讀顯示，沒有任何按鈕（不改動借用/歸還/扣庫存的既有邏輯）
+// 借用日快到了（3天內）用橘色標示提醒管理員留意，純視覺提示，不影響資料本身
+function renderReservationList(records){
+  if(!records.length){
+    document.getElementById('reservationList').innerHTML='<div class="admin-empty">目前沒有未來的預約</div>';
+    return;
+  }
+  const today=todayTaipei();
+  document.getElementById('reservationList').innerHTML=records.map(r=>{
+    const daysUntil=Math.floor((new Date(r.borrowDate)-new Date(today))/86400000);
+    const isSoon=daysUntil<=3;
+    return`<div class="return-card${isSoon?' overdue':''}">
+      <div class="return-card-header">
+        <div><div class="return-name">${esc(r.name)}</div><div class="return-unit">${esc(r.unit)}</div></div>
+        <span class="return-date-badge ${isSoon?'overdue':'today'}">${isSoon?`⏳ ${daysUntil<=0?'即將生效':daysUntil+' 天後生效'}`:'📅 已預約'}</span>
+      </div>
+      <div class="return-items">📦 ${esc(r.items)}</div>
+      <div class="return-meta">
+        <span>📅 借用日：${r.borrowDate}</span>
+        <span>📅 預計歸還：${r.returnDate}</span>
+        <span>📞 分機 ${r.ext||'—'}</span>
+      </div>
     </div>`;
   }).join('');
 }
