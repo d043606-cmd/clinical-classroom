@@ -167,12 +167,14 @@ textarea::placeholder{color:#94a3b8;}
 .return-list{display:grid;gap:10px;}
 .return-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 8px rgba(0,0,0,.07);border-left:4px solid var(--amber);}
 .return-card.overdue{border-left-color:var(--red);}
+.return-card.upcoming{border-left-color:var(--green);}
 .return-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
 .return-name{font-size:.88rem;font-weight:700;color:var(--navy);}
 .return-unit{font-size:.72rem;color:var(--muted);}
 .return-date-badge{font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:8px;white-space:nowrap;}
 .return-date-badge.today{background:#fef3c7;color:#92400e;}
 .return-date-badge.overdue{background:var(--red-light);color:#991b1b;}
+.return-date-badge.upcoming{background:var(--green-light);color:#065f46;}
 .return-items{font-size:.78rem;color:var(--slate);margin-bottom:10px;line-height:1.6;}
 .return-meta{display:flex;gap:12px;font-size:.7rem;color:var(--muted);margin-bottom:10px;}
 .btn-confirm-return{width:100%;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:background .2s;}
@@ -1180,10 +1182,12 @@ function renderAdminList(records){
   const today=todayTaipei();
   document.getElementById('returnList').innerHTML=records.map(r=>{
     const isOverdue=r.overdue||(r.returnDate<today);
+    const isDueToday=!isOverdue&&r.returnDate===today;
     const overdueDays=r.overdueDays||Math.max(0,Math.floor((new Date(today)-new Date(r.returnDate))/86400000));
-    const badgeCls=isOverdue?'overdue':'today';
-    const badgeText=isOverdue?`🚨 逾期 ${overdueDays} 天`:`⚠️ 今日到期`;
-    return`<div class="return-card${isOverdue?' overdue':''}">
+    const daysLeft=Math.max(0,Math.floor((new Date(r.returnDate)-new Date(today))/86400000));
+    const badgeCls=isOverdue?'overdue':(isDueToday?'today':'upcoming');
+    const badgeText=isOverdue?`🚨 逾期 ${overdueDays} 天`:(isDueToday?`⚠️ 今日到期`:`📅 ${daysLeft} 天後到期`);
+    return`<div class="return-card${isOverdue?' overdue':(isDueToday?'':' upcoming')}">
       <div class="return-card-header">
         <div><div class="return-name">${esc(r.name)}</div><div class="return-unit">${esc(r.unit)}</div></div>
         <span class="return-date-badge ${badgeCls}">${badgeText}</span>
@@ -1554,8 +1558,12 @@ function showCalDetail(dateStr){
   const evts = [];
   calEvents.forEach(r => {
     if(r.returnDate === dateStr){
-      const isOverdue = r.returnDate < todayTaipei();
-      evts.push({label: isOverdue?'🚨 逾期未還':'⚠️ 今日到期', record:r, color: isOverdue?'#ef4444':'#f59e0b'});
+      const todayStr = todayTaipei();
+      const isOverdue = r.returnDate < todayStr;
+      const isDueToday = r.returnDate === todayStr;
+      const label = isOverdue?'🚨 逾期未還':(isDueToday?'⚠️ 今日到期':'📅 應歸還日');
+      const color = isOverdue?'#ef4444':(isDueToday?'#f59e0b':'#4285f4');
+      evts.push({label, record:r, color});
     }
     if(r.borrowDate === dateStr){
       evts.push({label:'📦 借出日', record:r, color:'#34a853'});
