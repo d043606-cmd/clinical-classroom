@@ -287,7 +287,7 @@ textarea::placeholder{color:#94a3b8;}
     <div style="font-size:.72rem;color:var(--muted);padding:2px 0 6px;">📦 依教具類型瀏覽（每樣教具僅歸屬一個類別）</div>
     <div class="browse-search-wrap">
       <span class="bsi">🔍</span>
-      <input class="browse-search" id="browseQ" placeholder="搜尋教具名稱或類別…" oninput="renderBrowse()">
+      <input class="browse-search" id="browseQ" placeholder="輸入教具確切名稱或分類（例：異物哽塞）" oninput="renderBrowse()">
     </div>
     <div class="browse-filters" id="browseFilters"></div>
     <div class="browse-count">顯示 <strong id="browseCount">43</strong> 項教具</div>
@@ -849,7 +849,7 @@ function recCard(t,isSecondary){
   return `<div class="${cls}"><div class="rec-inner">
     <div class="rec-img" data-name="${esc(t.name)}" onclick="if(getImg(this.dataset.name)){openLightbox(getImg(this.dataset.name),this.dataset.name);event.stopPropagation();}" style="${imgUrl?'cursor:zoom-in':''}">${imgHtml}</div>
     <div class="rec-body">
-      <span class="room-badge ${t.room}">🏠 ${room.name}｜${room.desc}</span>
+      <span class="room-badge ${t.room}">🏠 ${room.name}｜${t.cat}</span>
       <div class="tool-name">${esc(t.name)}</div>
       <div class="tool-desc">${esc(t.desc)}</div>
       ${noteHtml}
@@ -925,8 +925,7 @@ function browseCard(t){
   return `<div class="b-card${isSelected?' selected':''}${isOut?' no-stock':''}" id="bcard_${t.id}">
     <div class="b-img" data-name="${esc(t.name)}" onclick="if(getImg(this.dataset.name)){openLightbox(getImg(this.dataset.name),this.dataset.name);event.stopPropagation();}">${imgContent}</div>
     <div class="b-body">
-      <div class="b-cat">${t.cat}</div>
-      <span class="room-badge ${t.room}">🏠 ${room.name}｜${room.desc}</span>
+      <span class="room-badge ${t.room}">🏠 ${room.name}｜${t.cat}</span>
       <div class="b-name">${esc(t.name)}</div>
       <div class="tool-desc">${esc(t.desc)}</div>
       ${noteHtml}
