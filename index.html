@@ -266,7 +266,7 @@ textarea::placeholder{color:#94a3b8;}
 <!-- ══ TAB1: AI 推薦 ══ -->
 <div id="sec1">
   <div class="search-card">
-    <div class="ai-hint">🤖 描述需求，AI 自動推薦最適合的教具</div>
+    <div class="ai-hint">🤖 描述需求，AI 自動推薦最適合的教具（依訓練情境搜尋，同一教具可能出現在多個情境）</div>
     <div class="input-row">
       <textarea id="queryInput" placeholder="例如：急救CPR訓練、靜脈注射、導尿技術、ICU照護…" rows="2"></textarea>
       <button class="btn-send" onclick="doSearch()">🔍</button>
@@ -284,6 +284,7 @@ textarea::placeholder{color:#94a3b8;}
 <!-- ══ TAB2: 瀏覽教具 ══ -->
 <div id="sec2" style="display:none;">
   <div class="browse-bar">
+    <div style="font-size:.72rem;color:var(--muted);padding:2px 0 6px;">📦 依教具類型瀏覽（每樣教具僅歸屬一個類別）</div>
     <div class="browse-search-wrap">
       <span class="bsi">🔍</span>
       <input class="browse-search" id="browseQ" placeholder="搜尋教具名稱或類別…" oninput="renderBrowse()">
@@ -600,30 +601,30 @@ function getImg(name){ return IMG[name] || ""; }
 const ROOMS={r1:{name:"練習室一",desc:"急救訓練"},r2:{name:"練習室二",desc:"注射採血"},r3:{name:"會議室",desc:"綜合技術"}};
 const STOCK={1:1,2:1,3:1,4:1,5:2,6:2,7:2,8:1,9:1,10:1,11:1,12:1,13:2,14:1,15:1,16:1,20:1,21:1,22:1,23:1,24:1,25:1,26:1,27:1,28:1,29:1,30:1,31:1,32:1,33:1,34:1,35:1,36:1,37:1,38:1,39:1,40:1,41:1,42:1,43:1,44:1,45:5,46:1,47:2,48:1,49:1};
 const TOOLS=[
-  {id:1,room:"r1",name:"半身CPR暨插管訓練急救假人",emoji:"🫁",cat:"心肺急救",desc:"整合CPR壓胸與氣管插管功能，搭配平板顯示訓練數據。",note:"",tags:["CPR","插管","急救"],keys:["cpr","急救","插管","心肺復甦","壓胸","氣管"]},
-  {id:2,room:"r2",name:"多功能假病人",emoji:"🧑‍⚕️",cat:"身體評估",desc:"可模擬成年人骨骼及解剖相關位置，手臂、腿部和關節可自然運動及彎曲；可作物理治療、翻身、傷口包紮、鼻胃管灌食、造口護理、氣管切開術、導尿、灌腸等。",note:"綜合技術",tags:["多功能","護理技術","全方位"],keys:["多功能","假病人","導尿","鼻胃管","翻身","傷口","管路","護理","氣管切開","造口","灌腸","物理治療","身體評估"]},
-  {id:3,room:"r1",name:"心外按摩練習模型-一般型（半身）",emoji:"💙",cat:"心肺急救",desc:"半身型，體積輕巧便於攜帶，適合基礎CPR及大班訓練。",note:"",tags:["CPR","半身","急救"],keys:["cpr","心外按摩","急救","壓胸","半身"]},
-  {id:4,room:"r1",name:"心外按摩練習模型-藍芽APP連線回饋（半身）",emoji:"📱",cat:"心肺急救",desc:"具藍牙APP即時回饋，可監測壓胸深度、頻率及手部位置。",note:"",tags:["CPR","藍牙","APP","智慧"],keys:["cpr","藍牙","app","回饋","智慧","壓胸"]},
-  {id:5,room:"r1",name:"心外按摩練習模型-內建燈號顯示（半身）",emoji:"🚦",cat:"心肺急救",desc:"內建燈號即時顯示壓胸品質，綠燈表示操作正確。",note:"",tags:["CPR","燈號","半身"],keys:["cpr","燈號","顯示","壓胸","心外按摩"]},
-  {id:6,room:"r1",name:"異物哽塞練習模型",emoji:"😮",cat:"心肺急救",desc:"可練習哈姆立克法操作，適合急救基礎訓練及衛教課程。",note:"",tags:["哈姆立克","哽塞","急救"],keys:["哽塞","哈姆立克","異物","氣道","急救"]},
-  {id:7,room:"r1",name:"多功能CPR練習球",emoji:"🟡",cat:"心肺急救",desc:"輕巧便攜，可練習壓胸手法，適合社區衛教及大班訓練。",note:"",tags:["CPR","練習球","社區"],keys:["cpr","練習球","壓胸","社區","衛教"]},
-  {id:45,room:"r1",name:"AED訓練器",emoji:"🔋",cat:"心肺急救",desc:"具電擊模擬功能，預設10種情境，AI全彩螢幕，強化臨場反應。",note:"具備電擊模擬功能，預設10種突發性心臟停止模擬訓練情境。",tags:["AED","電擊","急救"],keys:["aed","電擊","去顫","急救","心臟停止","除顫"]},
+  {id:1,room:"r1",name:"半身CPR暨插管訓練急救假人",emoji:"🫁",cat:"急救/CPR訓練",desc:"整合CPR壓胸與氣管插管功能，搭配平板顯示訓練數據。",note:"",tags:["CPR","插管","急救"],keys:["cpr","急救","插管","心肺復甦","壓胸","氣管"]},
+  {id:2,room:"r2",name:"多功能假病人",emoji:"🧑‍⚕️",cat:"傷口/褥瘡照護",desc:"可模擬成年人骨骼及解剖相關位置，手臂、腿部和關節可自然運動及彎曲；可作物理治療、翻身、傷口包紮、鼻胃管灌食、造口護理、氣管切開術、導尿、灌腸等。",note:"綜合技術",tags:["多功能","護理技術","全方位"],keys:["多功能","假病人","導尿","鼻胃管","翻身","傷口","管路","護理","氣管切開","造口","灌腸","物理治療","身體評估"]},
+  {id:3,room:"r1",name:"心外按摩練習模型-一般型（半身）",emoji:"💙",cat:"急救/CPR訓練",desc:"半身型，體積輕巧便於攜帶，適合基礎CPR及大班訓練。",note:"",tags:["CPR","半身","急救"],keys:["cpr","心外按摩","急救","壓胸","半身"]},
+  {id:4,room:"r1",name:"心外按摩練習模型-藍芽APP連線回饋（半身）",emoji:"📱",cat:"急救/CPR訓練",desc:"具藍牙APP即時回饋，可監測壓胸深度、頻率及手部位置。",note:"",tags:["CPR","藍牙","APP","智慧"],keys:["cpr","藍牙","app","回饋","智慧","壓胸"]},
+  {id:5,room:"r1",name:"心外按摩練習模型-內建燈號顯示（半身）",emoji:"🚦",cat:"急救/CPR訓練",desc:"內建燈號即時顯示壓胸品質，綠燈表示操作正確。",note:"",tags:["CPR","燈號","半身"],keys:["cpr","燈號","顯示","壓胸","心外按摩"]},
+  {id:6,room:"r1",name:"異物哽塞練習模型",emoji:"😮",cat:"急救/CPR訓練",desc:"可練習哈姆立克法操作，適合急救基礎訓練及衛教課程。",note:"",tags:["哈姆立克","哽塞","急救"],keys:["哽塞","哈姆立克","異物","氣道","急救"]},
+  {id:7,room:"r1",name:"多功能CPR練習球",emoji:"🟡",cat:"急救/CPR訓練",desc:"輕巧便攜，可練習壓胸手法，適合社區衛教及大班訓練。",note:"",tags:["CPR","練習球","社區"],keys:["cpr","練習球","壓胸","社區","衛教"]},
+  {id:45,room:"r1",name:"AED訓練器",emoji:"🔋",cat:"急救/CPR訓練",desc:"具電擊模擬功能，預設10種情境，AI全彩螢幕，強化臨場反應。",note:"具備電擊模擬功能，預設10種突發性心臟停止模擬訓練情境。",tags:["AED","電擊","急救"],keys:["aed","電擊","去顫","急救","心臟停止","除顫"]},
   {id:8,room:"r3",name:"困難氣道處理訓練模型",emoji:"🫁",cat:"氣道管理",desc:"模擬各種氣道解剖特徵，供氣管插管、喉罩等進階氣道管理練習。",note:"插管訓練",tags:["氣道","插管","困難氣道"],keys:["困難氣道","氣道","插管","喉罩","lma","氣管"]},
   {id:9,room:"r3",name:"插管安妮",emoji:"🗣️",cat:"氣道管理",desc:"具逼真口腔及喉部構造，供氣管內管插管技術練習。",note:"插管訓練",tags:["插管","氣道","安妮"],keys:["插管","氣管","氣道","安妮","intubation","ett"]},
-  {id:23,room:"r3",name:"半身中央靜脈導管插管訓練",emoji:"🔩",cat:"基本護理",desc:"可練習頸靜脈、鎖骨下靜脈穿刺及PICC、Port-A管路護理。",note:"",tags:["中央靜脈","CVP","PICC"],keys:["中央靜脈","cvp","cvc","頸靜脈","鎖骨","icu","picc","port-a"]},
-  {id:33,room:"r3",name:"腰椎穿刺模型",emoji:"🪛",cat:"基本護理",desc:"模擬脊椎解剖構造，供穿刺技術與步驟練習。",note:"可練習注射局部麻醉劑、硬膜外腔與蛛網膜下腔穿刺。",tags:["腰椎穿刺","脊髓","硬膜外"],keys:["腰椎","脊髓","脊椎","穿刺","腦脊液","神經科","腰穿"]},
-  {id:34,room:"r3",name:"腹部扣診與腹腔穿刺模型",emoji:"🫃",cat:"基本護理",desc:"可練習腹部扣診、觸診技術及腹腔穿刺操作步驟。",note:"",tags:["腹部","扣診","穿刺"],keys:["腹部","扣診","觸診","腹腔","穿刺","腹水","身體評估"]},
-  {id:11,room:"r2",name:"靜脈注射訓練手臂模型",emoji:"💉",cat:"靜脈注射/採血",desc:"具逼真血管觸感，可練習靜脈穿刺、留置針置入、輸液管路連接。",note:"",tags:["靜脈注射","IV","穿刺"],keys:["靜脈","注射","iv","點滴","穿刺","打針","採血","抽血","留置針"]},
-  {id:12,room:"r2",name:"靜脈注射手臂",emoji:"🦾",cat:"靜脈注射/採血",desc:"提供基礎靜脈穿刺訓練，適合初學者練習進針手感與角度。",note:"",tags:["靜脈注射","手臂","基礎"],keys:["靜脈","注射","iv","穿刺","打針","手臂","基礎"]},
-  {id:46,room:"r2",name:"電動靜脈注射手臂模型",emoji:"🦿",cat:"靜脈注射/採血",desc:"具血管隆起功能，模擬綁止血帶後靜脈隆起，提供真實採血體驗。",note:"模型具血管隆起功能，模擬綁上止血帶後靜脈血管隆起，提供真實採血體驗。",tags:["電動","靜脈","採血"],keys:["電動","靜脈","注射","採血","抽血","止血帶","真空採血"]},
-  {id:13,room:"r2",name:"靜脈注射練習墊",emoji:"🟨",cat:"靜脈注射/採血",desc:"提供平面穿刺訓練，可重複穿刺使用，適合基礎進針手感練習。",note:"",tags:["靜脈注射","練習墊"],keys:["靜脈","注射","練習墊","穿刺","打針"]},
-  {id:22,room:"r3",name:"下肢穿刺模擬訓練模型",emoji:"🦵",cat:"靜脈注射/採血",desc:"供靜脈穿刺、動脈採血等下肢相關穿刺技術訓練。",note:"",tags:["下肢穿刺","靜脈","動脈"],keys:["下肢","穿刺","靜脈","動脈","採血","腿部"]},
-  {id:32,room:"r3",name:"半身靜脈注射模型",emoji:"💉",cat:"靜脈注射/採血",desc:"提供較完整的上半身靜脈分布，適合中央靜脈導管置入技術練習。",note:"",tags:["中央靜脈","靜脈注射","半身"],keys:["靜脈","注射","iv","點滴","穿刺","半身","中央靜脈"]},
+  {id:23,room:"r3",name:"半身中央靜脈導管插管訓練",emoji:"🔩",cat:"靜脈注射訓練",desc:"可練習頸靜脈、鎖骨下靜脈穿刺及PICC、Port-A管路護理。",note:"",tags:["中央靜脈","CVP","PICC"],keys:["中央靜脈","cvp","cvc","頸靜脈","鎖骨","icu","picc","port-a"]},
+  {id:33,room:"r3",name:"腰椎穿刺模型",emoji:"🪛",cat:"腰椎穿刺",desc:"模擬脊椎解剖構造，供穿刺技術與步驟練習。",note:"可練習注射局部麻醉劑、硬膜外腔與蛛網膜下腔穿刺。",tags:["腰椎穿刺","脊髓","硬膜外"],keys:["腰椎","脊髓","脊椎","穿刺","腦脊液","神經科","腰穿"]},
+  {id:34,room:"r3",name:"腹部扣診與腹腔穿刺模型",emoji:"🫃",cat:"腹部扣診與腹腔穿刺",desc:"可練習腹部扣診、觸診技術及腹腔穿刺操作步驟。",note:"",tags:["腹部","扣診","穿刺"],keys:["腹部","扣診","觸診","腹腔","穿刺","腹水","身體評估"]},
+  {id:11,room:"r2",name:"靜脈注射訓練手臂模型",emoji:"💉",cat:"靜脈注射訓練",desc:"具逼真血管觸感，可練習靜脈穿刺、留置針置入、輸液管路連接。",note:"",tags:["靜脈注射","IV","穿刺"],keys:["靜脈","注射","iv","點滴","穿刺","打針","採血","抽血","留置針"]},
+  {id:12,room:"r2",name:"靜脈注射手臂",emoji:"🦾",cat:"靜脈注射訓練",desc:"提供基礎靜脈穿刺訓練，適合初學者練習進針手感與角度。",note:"",tags:["靜脈注射","手臂","基礎"],keys:["靜脈","注射","iv","穿刺","打針","手臂","基礎"]},
+  {id:46,room:"r2",name:"電動靜脈注射手臂模型",emoji:"🦿",cat:"靜脈注射訓練",desc:"具血管隆起功能，模擬綁止血帶後靜脈隆起，提供真實採血體驗。",note:"模型具血管隆起功能，模擬綁上止血帶後靜脈血管隆起，提供真實採血體驗。",tags:["電動","靜脈","採血"],keys:["電動","靜脈","注射","採血","抽血","止血帶","真空採血"]},
+  {id:13,room:"r2",name:"靜脈注射練習墊",emoji:"🟨",cat:"靜脈注射訓練",desc:"提供平面穿刺訓練，可重複穿刺使用，適合基礎進針手感練習。",note:"",tags:["靜脈注射","練習墊"],keys:["靜脈","注射","練習墊","穿刺","打針"]},
+  {id:22,room:"r3",name:"下肢穿刺模擬訓練模型",emoji:"🦵",cat:"動脈導管穿刺技術",desc:"供靜脈穿刺、動脈採血等下肢相關穿刺技術訓練。",note:"",tags:["下肢穿刺","靜脈","動脈"],keys:["下肢","穿刺","靜脈","動脈","採血","腿部"]},
+  {id:32,room:"r3",name:"半身靜脈注射模型",emoji:"💉",cat:"靜脈注射訓練",desc:"提供較完整的上半身靜脈分布，適合中央靜脈導管置入技術練習。",note:"",tags:["中央靜脈","靜脈注射","半身"],keys:["靜脈","注射","iv","點滴","穿刺","半身","中央靜脈"]},
   {id:14,room:"r2",name:"男性導尿模型",emoji:"🔵",cat:"導尿",desc:"模擬男性泌尿道解剖構造，可練習無菌導尿管置入技術及尿袋管理。",note:"導尿模型",tags:["導尿","男性","無菌"],keys:["導尿","男性","泌尿","尿管","foley","留置","無菌","膀胱"]},
   {id:15,room:"r2",name:"女性導尿模型",emoji:"🩷",cat:"導尿",desc:"模擬女性泌尿道解剖構造，可練習無菌導尿管置入及會陰清潔。",note:"導尿模型",tags:["導尿","女性","無菌"],keys:["導尿","女性","泌尿","尿管","foley","留置","無菌","膀胱"]},
   {id:16,room:"r2",name:"透明女性導尿模型",emoji:"🔍",cat:"導尿",desc:"透明構造，可清楚觀察解剖路徑，適合教學示範及技術確認。",note:"導尿模型",tags:["導尿","透明","教學示範"],keys:["導尿","透明","女性","泌尿","尿管","解剖","教學"]},
-  {id:20,room:"r3",name:"褥瘡清理與敷藥訓練模型",emoji:"🩹",cat:"傷口護理",desc:"模擬不同分期壓力性損傷，可練習清創、敷藥及傷口評估技術。",note:"",tags:["褥瘡","傷口","敷藥"],keys:["褥瘡","傷口","敷藥","壓傷","壓力性損傷","清創","換藥"]},
-  {id:21,room:"r3",name:"氣胸訓練模型",emoji:"🫀",cat:"傷口護理",desc:"可練習胸腔穿刺減壓、胸管置入等氣胸緊急處置技術。",note:"",tags:["氣胸","胸腔穿刺","緊急"],keys:["氣胸","胸腔","穿刺","減壓","胸管","icu","急救"]},
+  {id:20,room:"r3",name:"褥瘡清理與敷藥訓練模型",emoji:"🩹",cat:"傷口/褥瘡照護",desc:"模擬不同分期壓力性損傷，可練習清創、敷藥及傷口評估技術。",note:"",tags:["褥瘡","傷口","敷藥"],keys:["褥瘡","傷口","敷藥","壓傷","壓力性損傷","清創","換藥"]},
+  {id:21,room:"r3",name:"氣胸訓練模型",emoji:"🫀",cat:"氣胸訓練",desc:"可練習胸腔穿刺減壓、胸管置入等氣胸緊急處置技術。",note:"",tags:["氣胸","胸腔穿刺","緊急"],keys:["氣胸","胸腔","穿刺","減壓","胸管","icu","急救"]},
   {id:24,room:"r3",name:"婦科訓練模型",emoji:"🩺",cat:"婦兒科",desc:"供子宮頸抹片採集、陰道鏡操作及內診技術練習。",note:"",tags:["婦科","抹片","內診"],keys:["婦科","抹片","內診","骨盆","子宮頸","陰道鏡","婦女"]},
   {id:25,room:"r3",name:"乳房自我檢查模型",emoji:"🎀",cat:"婦兒科",desc:"內含不同大小、位置的硬塊模擬，供乳房自我檢查衛教教學。",note:"",tags:["乳房","自我檢查","衛教"],keys:["乳房","乳癌","自我檢查","觸診","衛教","健康促進"]},
   {id:44,room:"r3",name:"24吋嬰兒模型",emoji:"👶",cat:"婦兒科",desc:"供新生兒護理技術練習，包含換尿布、洗澡、餵食及嬰兒急救訓練。",note:"",tags:["嬰兒","新生兒","兒科"],keys:["嬰兒","新生兒","兒科","換尿布","洗澡","餵食","嬰兒急救"]},
@@ -643,8 +644,8 @@ const TOOLS=[
   {id:30,room:"r3",name:"數粒機",emoji:"💊",cat:"教學器材",desc:"藥事教學用數粒機，供藥物調配計數練習，適合藥事人員及護理師。",note:"可對片劑、膠囊、軟膠囊、丸劑等固體製劑進行計數裝瓶。",tags:["藥事","數藥","用藥管理"],keys:["藥事","數藥","藥物","用藥","調配","藥師","計數","給藥"]},
   {id:43,room:"r3",name:"雙向聽診器",emoji:"🩺",cat:"教學器材",desc:"師生可同步聽診，教師與學員同時聆聽同一部位聲音。",note:"",tags:["聽診器","聽診","雙向"],keys:["聽診","心音","呼吸音","腸蠕動","評估","身體評估","聽診器"]},
   {id:47,room:"r3",name:"專業教學麥克風-擴音機",emoji:"🎤",cat:"教學器材",desc:"教學用擴音麥克風，提升教室講課音量，適合大班教學或示範課程。",note:"",tags:["麥克風","擴音機","教學"],keys:["麥克風","擴音","擴音機","教學麥克風","音響","講課","大班教學"]},
-  {id:48,room:"r1",name:"電擊器",emoji:"⚡",cat:"心肺急救",desc:"飛利浦 HeartStart XL 雙相波電擊器，具備 Manual On / AED On 雙模式，可手動選擇電擊能量或切換全自動去顫模式。",note:"",tags:["電擊器","去顫","急救"],keys:["電擊器","去顫","電擊","心臟停止","急救","cpr","除顫","aed"]},
-  {id:49,room:"r1",name:"急救車設備",emoji:"🚑",cat:"心肺急救",desc:"急救車含急救藥品、IV輸液耗材、氣道處置用品（Endo tube、Ambu、抽痰管等）四層抽屜完整配置，並附氧氣瓶。",note:"",tags:["急救車","急救設備","插管"],keys:["急救車","急救設備","急救藥品","插管","氣道","氧氣","icu","加護"]},
+  {id:48,room:"r1",name:"電擊器",emoji:"⚡",cat:"急救/CPR訓練",desc:"飛利浦 HeartStart XL 雙相波電擊器，具備 Manual On / AED On 雙模式，可手動選擇電擊能量或切換全自動去顫模式。",note:"",tags:["電擊器","去顫","急救"],keys:["電擊器","去顫","電擊","心臟停止","急救","cpr","除顫","aed"]},
+  {id:49,room:"r1",name:"急救車設備",emoji:"🚑",cat:"急救/CPR訓練",desc:"急救車含急救藥品、IV輸液耗材、氣道處置用品（Endo tube、Ambu、抽痰管等）四層抽屜完整配置，並附氧氣瓶。",note:"",tags:["急救車","急救設備","插管"],keys:["急救車","急救設備","急救藥品","插管","氣道","氧氣","icu","加護"]},
 ];
 
 const SEARCH_MAP={
@@ -848,7 +849,7 @@ function recCard(t,isSecondary){
   return `<div class="${cls}"><div class="rec-inner">
     <div class="rec-img" data-name="${esc(t.name)}" onclick="if(getImg(this.dataset.name)){openLightbox(getImg(this.dataset.name),this.dataset.name);event.stopPropagation();}" style="${imgUrl?'cursor:zoom-in':''}">${imgHtml}</div>
     <div class="rec-body">
-      <span class="room-badge ${t.room}">🏠 ${room.name}｜${t.note||room.desc}</span>
+      <span class="room-badge ${t.room}">🏠 ${room.name}｜${room.desc}</span>
       <div class="tool-name">${esc(t.name)}</div>
       <div class="tool-desc">${esc(t.desc)}</div>
       ${noteHtml}
@@ -898,6 +899,7 @@ function renderBrowse(){
 }
 
 function browseCard(t){
+  const room=ROOMS[t.room];
   const available=liveStock[t.id]!==undefined?liveStock[t.id]:(STOCK[t.id]||1);
   const isOut=available<=0;
   const inCart=cart[t.id]||0;
@@ -911,6 +913,7 @@ function browseCard(t){
   const badgeText=isOut?'借出中':`可借 ${available} 件`;
   const stockText=isOut?'● 借出中':`● 可借 ${available} 件`;
   const bLbClick=imgUrl?`onclick="openLightbox(getImg('${t.name.replace(/'/g,"\\'")}'),'${t.name.replace(/'/g,"\\'")}');event.stopPropagation();" style="cursor:zoom-in;"`:''  ;
+  const noteHtml=(t.note&&t.note.length>10)?`<div class="tool-note">📌 ${esc(t.note)}</div>`:'';
   let action;
   if(isOut){
     action=`<span style="font-size:.62rem;color:#94a3b8;">目前無庫存</span><button class="b-sel dis" disabled>無庫存</button>`;
@@ -923,7 +926,10 @@ function browseCard(t){
     <div class="b-img" data-name="${esc(t.name)}" onclick="if(getImg(this.dataset.name)){openLightbox(getImg(this.dataset.name),this.dataset.name);event.stopPropagation();}">${imgContent}</div>
     <div class="b-body">
       <div class="b-cat">${t.cat}</div>
+      <span class="room-badge ${t.room}">🏠 ${room.name}｜${room.desc}</span>
       <div class="b-name">${esc(t.name)}</div>
+      <div class="tool-desc">${esc(t.desc)}</div>
+      ${noteHtml}
       <div class="b-stock ${isOut?'out':'ok'}">${stockText}</div>
       <div class="b-row">${action}</div>
     </div>
