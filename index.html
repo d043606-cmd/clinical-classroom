@@ -1093,6 +1093,17 @@ function pinInput(digit){
   if(pinBuf.length===4) checkPin();
 }
 
+// 支援用實體鍵盤輸入密碼（0-9數字鍵、Backspace刪除），
+// 這樣簡報投影時只會看到圓點變化，不會讓台下看到你點擊畫面上哪個數字鍵
+document.addEventListener('keydown',(e)=>{
+  const loginVisible=document.getElementById('adminLogin')&&document.getElementById('adminLogin').style.display!=='none';
+  const sec3Visible=document.getElementById('sec3')&&document.getElementById('sec3').style.display!=='none';
+  if(!loginVisible||!sec3Visible)return; // 只有在管理員登入畫面顯示時才生效，不影響其他分頁的鍵盤操作
+  if(e.key>='0'&&e.key<='9'){ pinInput(e.key); e.preventDefault(); }
+  else if(e.key==='Backspace'){ pinDelete(); e.preventDefault(); }
+  else if(e.key==='Escape'){ pinClear(); e.preventDefault(); }
+});
+
 function updatePinDots(){
   for(let i=0;i<4;i++){
     document.getElementById(`d${i}`).classList.toggle('filled',i<pinBuf.length);
