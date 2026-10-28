@@ -220,6 +220,24 @@ textarea::placeholder{color:#94a3b8;}
 .req{color:var(--red);}
 .form-input,.form-select{border:1.5px solid var(--border);border-radius:10px;padding:8px 11px;font-size:.84rem;font-family:'Noto Sans TC',sans-serif;color:var(--navy);outline:none;transition:border-color .2s;background:#fff;width:100%;}
 .form-input:focus,.form-select:focus{border-color:var(--teal);}
+.form-input.field-error{border-color:var(--red);background:#fff5f5;}
+.group-error{outline:1.5px solid var(--red);outline-offset:4px;border-radius:8px;}
+.period-bar{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:8px 10px;margin:0 0 8px;}
+.period-title{font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.period-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+.period-row .form-input{width:auto;flex:1 1 130px;min-width:0;}
+.period-sep{font-size:.8rem;color:var(--muted);}
+.period-clear{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 10px;font-size:.75rem;cursor:pointer;color:var(--muted);}
+.period-status{font-size:.74rem;color:var(--muted);margin-top:6px;line-height:1.5;}
+.period-status.on{color:#047857;}
+.period-status.err{color:#b91c1c;}
+.avail-note{font-size:.78rem;line-height:1.6;margin:-2px 0 6px;padding:8px 11px;border-radius:10px;display:none;}
+.avail-note.ok{display:block;background:#ecfdf5;color:#047857;}
+.avail-note.warn{display:block;background:#fef2f2;color:#b91c1c;}
+.avail-note.loading{display:block;background:#f1f5f9;color:#475569;}
+.cart-avail{font-size:.7rem;margin-right:8px;padding:1px 7px;border-radius:99px;white-space:nowrap;}
+.cart-avail.ok{background:#ecfdf5;color:#047857;}
+.cart-avail.bad{background:#fef2f2;color:#b91c1c;font-weight:700;}
 .form-divider{border:none;border-top:1px solid var(--border);margin:3px 0;}
 .check-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
 .check-item{display:flex;align-items:center;gap:4px;cursor:pointer;}
@@ -284,6 +302,17 @@ textarea::placeholder{color:#94a3b8;}
 <!-- ══ TAB2: 瀏覽教具 ══ -->
 <div id="sec2" style="display:none;">
   <div class="browse-bar">
+    <!-- ══ 預計借用期間：選了之後，教具清單改顯示「這段期間可借幾個」 ══ -->
+    <div class="period-bar" id="periodBar">
+      <div class="period-title">📅 要預約未來日期？先選借用期間</div>
+      <div class="period-row">
+        <input type="date" class="form-input" id="p_borrow" onchange="onPeriodPick()" aria-label="借用日期">
+        <span class="period-sep">至</span>
+        <input type="date" class="form-input" id="p_return" onchange="onPeriodPick()" aria-label="歸還日期">
+        <button type="button" class="period-clear" onclick="clearPeriod()">清除</button>
+      </div>
+      <div class="period-status" id="periodStatus">未選日期：顯示今天的庫存。</div>
+    </div>
     <div style="font-size:.72rem;color:var(--muted);padding:2px 0 6px;">📦 依教具類型瀏覽（每樣教具僅歸屬一個類別）</div>
     <div class="browse-search-wrap">
       <span class="bsi">🔍</span>
@@ -450,13 +479,14 @@ textarea::placeholder{color:#94a3b8;}
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">電子郵件 <span class="req">*</span></label><input type="email" class="form-input" id="f_email" placeholder="歸還提醒用"></div>
-      <div class="form-group"><label class="form-label">分機</label><input type="text" class="form-input" id="f_ext" placeholder="院內分機"></div>
+      <div class="form-group"><label class="form-label">分機 <span class="req">*</span></label><input type="text" class="form-input" id="f_ext" placeholder="院內分機（數字）" inputmode="numeric"></div>
     </div>
     <hr class="form-divider">
     <div class="form-row">
-      <div class="form-group"><label class="form-label">借用日期 <span class="req">*</span></label><input type="date" class="form-input" id="f_borrow_date"></div>
-      <div class="form-group"><label class="form-label">歸還日期 <span class="req">*</span></label><input type="date" class="form-input" id="f_return_date"></div>
+      <div class="form-group"><label class="form-label">借用日期 <span class="req">*</span></label><input type="date" class="form-input" id="f_borrow_date" onchange="checkPeriodAvailability()"></div>
+      <div class="form-group"><label class="form-label">歸還日期 <span class="req">*</span></label><input type="date" class="form-input" id="f_return_date" onchange="checkPeriodAvailability()"></div>
     </div>
+    <div class="avail-note" id="availNote"></div>
     <div class="form-group full">
       <label class="form-label">借用用途 <span class="req">*</span></label>
       <div class="radio-group">
@@ -468,8 +498,8 @@ textarea::placeholder{color:#94a3b8;}
       <input type="text" class="form-input other-input" id="purposeOther" placeholder="請說明用途">
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">講師</label><input type="text" class="form-input" id="f_lecturer" placeholder="授課講師"></div>
-      <div class="form-group"><label class="form-label">主題</label><input type="text" class="form-input" id="f_topic" placeholder="課程主題"></div>
+      <div class="form-group"><label class="form-label">講師 <span class="req">*</span></label><input type="text" class="form-input" id="f_lecturer" placeholder="授課講師（沒有請填「無」）"></div>
+      <div class="form-group"><label class="form-label">主題 <span class="req">*</span></label><input type="text" class="form-input" id="f_topic" placeholder="課程主題"></div>
     </div>
     <div class="form-group"><label class="form-label">使用人次 <span class="req">*</span></label><input type="number" class="form-input" id="f_headcount" placeholder="預計人次" min="1" style="max-width:150px;"></div>
     <hr class="form-divider">
@@ -519,7 +549,7 @@ textarea::placeholder{color:#94a3b8;}
   <h4>📋 借用規定提醒</h4>
   借用前請填寫外借申請，需經管理者點交確認後方可借用。<br>
   借用完畢請確實復原器材並清潔，嚴禁使用有色液體於教具上。<br>
-  聯繫教室管理員：📞 分機 6301
+  聯繫教室管理員：📞 分機 5050
 </div>
 
 <!-- 燈箱放大 -->
@@ -682,6 +712,25 @@ function todayTaipei(){
   return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Taipei'});
 }
 
+// 長期借用提示門檻（不擋借用，只提醒；超過時系統會通知管理員）
+const LONG_LOAN_DAYS=14;
+function addDays(dateStr,n){
+  if(!dateStr)return '';
+  const d=new Date(dateStr+'T12:00:00+08:00');
+  d.setTime(d.getTime()+n*86400000);
+  return d.toLocaleDateString('en-CA',{timeZone:'Asia/Taipei'});
+}
+function loanDays(b,r){
+  return Math.round((new Date(r+'T12:00:00+08:00')-new Date(b+'T12:00:00+08:00'))/86400000)+1;
+}
+// 某教具目前能選幾件：有選借用期間 → 用這段期間的可借數；沒選 → 用今天的庫存
+function availFor(toolId){
+  const t=TOOLS.find(x=>x.id===toolId);
+  if(periodAvail&&t&&periodAvail[t.name]!==undefined)return periodAvail[t.name];
+  return liveStock[toolId]!==undefined?liveStock[toolId]:(STOCK[toolId]||1);
+}
+function periodOn(){return !!periodAvail;}
+
 // 初始化
 const today=todayTaipei();
 document.getElementById('f_borrow_date').value=today;
@@ -690,6 +739,8 @@ document.getElementById('f_return_date').min=today;
 document.getElementById('f_borrow_date').addEventListener('change',function(){
   document.getElementById('f_return_date').min=this.value;
 });
+document.getElementById('p_borrow').min=today;
+document.getElementById('p_return').min=today;
 document.getElementById('quickTags').innerHTML=QUICK_TAGS.map(t=>
   `<span class="tag" onclick="useTag('${t}')">${t}</span>`
 ).join('');
@@ -788,16 +839,18 @@ function scoreTools(query){
     secondary:scored.slice(4,7).map(x=>x.tool)};
 }
 
-function doSearch(){
+function doSearch(noScroll){
   const query=document.getElementById('queryInput').value.trim();
   if(!query)return;
-  track('search',query);
+  if(!noScroll)track('search',query);
   const result=scoreTools(query);
   const box=document.getElementById('resultsBox');
-  document.getElementById('formSection').classList.remove('show');
-  document.getElementById('successBox').classList.remove('show');
+  if(!noScroll){ // 背景重新整理（noScroll）時不要關掉已打開的申請表
+    document.getElementById('formSection').classList.remove('show');
+    document.getElementById('successBox').classList.remove('show');
+  }
   if(!result||!result.primary.length){
-    box.innerHTML=`<div class="empty-state"><div style="font-size:2rem;margin-bottom:8px">🔍</div>找不到「${esc(query)}」相關教具，請嘗試其他關鍵字<br><br>📞 分機 6301<button class="btn-reset" onclick="resetSearch()" style="margin-left:10px;">重新搜尋</button></div>`;
+    box.innerHTML=`<div class="empty-state"><div style="font-size:2rem;margin-bottom:8px">🔍</div>找不到「${esc(query)}」相關教具，請嘗試其他關鍵字<br><br>📞 分機 5050<button class="btn-reset" onclick="resetSearch()" style="margin-left:10px;">重新搜尋</button></div>`;
     box.style.display='block';
     box.scrollIntoView({behavior:'smooth',block:'start'});
     return;
@@ -817,13 +870,13 @@ function doSearch(){
   html+=`<div style="text-align:center"><button class="btn-reset" onclick="resetSearch()">🔄 重新搜尋</button></div>`;
   box.innerHTML=html;
   box.style.display='block';
-  box.scrollIntoView({behavior:'smooth',block:'start'});
+  if(!noScroll)box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function recCard(t,isSecondary){
   const room=ROOMS[t.room];
   const cls=isSecondary?'rec-card secondary':`rec-card ${t.room}`;
-  const available=liveStock[t.id]!==undefined?liveStock[t.id]:(STOCK[t.id]||1);
+  const available=availFor(t.id);
   const isOut=available<=0;
   const inCart=cart[t.id]||0;
   const isSelected=inCart>0;
@@ -832,12 +885,12 @@ function recCard(t,isSecondary){
   const imgHtml=imgUrl
     ?`<img src="${imgUrl}" alt="${t.name}" loading="lazy" style="pointer-events:none;" onerror="this.style.display='none'">`
     :`<span style="font-size:2rem">${t.emoji}</span>`;
-  const stockHtml=`<span class="stock-txt ${isOut?'out':'ok'}">${isOut?'● 借出中':`● 可借 ${available} 件`}</span>`;
+  const stockHtml=`<span class="stock-txt ${isOut?'out':'ok'}">${isOut?(periodOn()?'● 此期間已被借用/預約':'● 借出中'):(periodOn()?`● 此期間可借 ${available} 件`:`● 可借 ${available} 件`)}</span>`;
   const imgClickable = imgUrl ? 'onclick="openLightbox(getImg(\'' + t.name.replace(/\'/, "\\\'" ) + '\'),\'' + t.name.replace(/\'/, "\\\'" ) + '\');event.stopPropagation();" style="cursor:zoom-in;"' : '';
 
   let action;
   if(isOut){
-    action=`<div class="qty-ctrl" style="opacity:.3"><button class="qty-btn" disabled>－</button><span class="qty-num">1</span><button class="qty-btn" disabled>＋</button></div><button class="btn-add disabled" disabled>無庫存</button>`;
+    action=`<div class="qty-ctrl" style="opacity:.3"><button class="qty-btn" disabled>－</button><span class="qty-num">1</span><button class="qty-btn" disabled>＋</button></div><button class="btn-add disabled" disabled>${periodOn()?'此期間無法借':'無庫存'}</button>${periodOn()?'':`<div style="font-size:.66rem;color:var(--muted);margin-top:4px;width:100%;text-align:right;">要預約其他日期？<a href="#" onclick="switchTab(2);setTimeout(()=>document.getElementById('p_borrow').focus(),200);return false;">到「瀏覽教具」選日期</a></div>`}`;
   }else if(isSelected){
     action=`<div class="qty-ctrl"><button class="qty-btn" onclick="changeRecQty(${t.id},-1)" ${qty<=1?'disabled':''}>－</button><span class="qty-num" id="rqty_${t.id}">${qty}</span><button class="qty-btn" onclick="changeRecQty(${t.id},1)" ${qty>=available?'disabled':''}>＋</button></div><button class="btn-add added" onclick="removeCart(${t.id})">✓ 已選</button>`;
   }else{
@@ -862,7 +915,7 @@ function recCard(t,isSecondary){
 function changeRecQty(toolId,delta){
   const numEl=document.getElementById(`rqty_${toolId}`);
   if(!numEl)return;
-  const available=liveStock[toolId]||(STOCK[toolId]||1);
+  const available=availFor(toolId);
   let qty=Math.max(1,Math.min(available,parseInt(numEl.textContent)+delta));
   numEl.textContent=qty;
   if(cart[toolId]){cart[toolId]=qty;renderCartBar();}
@@ -900,7 +953,7 @@ function renderBrowse(){
 
 function browseCard(t){
   const room=ROOMS[t.room];
-  const available=liveStock[t.id]!==undefined?liveStock[t.id]:(STOCK[t.id]||1);
+  const available=availFor(t.id);
   const isOut=available<=0;
   const inCart=cart[t.id]||0;
   const isSelected=inCart>0;
@@ -911,12 +964,12 @@ function browseCard(t){
     :`<span style="font-size:2rem;">${t.emoji}</span>`;
   const badgeCls=isOut?'out':'ok';
   const badgeText=isOut?'借出中':`可借 ${available} 件`;
-  const stockText=isOut?'● 借出中':`● 可借 ${available} 件`;
+  const stockText=isOut?(periodOn()?'● 此期間已被借用/預約':'● 借出中'):(periodOn()?`● 此期間可借 ${available} 件`:`● 可借 ${available} 件`);
   const bLbClick=imgUrl?`onclick="openLightbox(getImg('${t.name.replace(/'/g,"\\'")}'),'${t.name.replace(/'/g,"\\'")}');event.stopPropagation();" style="cursor:zoom-in;"`:''  ;
   const noteHtml=(t.note&&t.note.length>10)?`<div class="tool-note">📌 ${esc(t.note)}</div>`:'';
   let action;
   if(isOut){
-    action=`<span style="font-size:.62rem;color:#94a3b8;">目前無庫存</span><button class="b-sel dis" disabled>無庫存</button>`;
+    action=`<span style="font-size:.62rem;color:#94a3b8;">${periodOn()?'此期間無庫存':'目前無庫存'}</span><button class="b-sel dis" disabled>無庫存</button>`;
   }else if(isSelected){
     action=`<div class="b-qty"><button class="bqb" onclick="changeBQty(${t.id},-1)" ${qty<=1?'disabled':''}>－</button><span class="bqn" id="bqty_${t.id}">${qty}</span><button class="bqb" onclick="changeBQty(${t.id},1)" ${qty>=available?'disabled':''}>＋</button></div><button class="b-sel added" onclick="removeCart(${t.id})">✓ 已選</button>`;
   }else{
@@ -938,7 +991,7 @@ function browseCard(t){
 function changeBQty(toolId,delta){
   const numEl=document.getElementById(`bqty_${toolId}`);
   if(!numEl)return;
-  const available=liveStock[toolId]||(STOCK[toolId]||1);
+  const available=availFor(toolId);
   let qty=Math.max(1,Math.min(available,parseInt(numEl.textContent)+delta));
   numEl.textContent=qty;
   if(cart[toolId]){cart[toolId]=qty;renderCartBar();}
@@ -976,6 +1029,7 @@ function goToForm(){
   document.getElementById('successBox').classList.remove('show');
   document.getElementById('formSection').classList.add('show');
   renderCartSummary();
+  checkPeriodAvailability();
   document.getElementById('formSection').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -986,7 +1040,12 @@ function renderCartSummary(){
   list.innerHTML=entries.map(([id,qty])=>{
     const t=TOOLS.find(x=>x.id===parseInt(id));
     if(!t)return'';
-    return`<div class="cart-item-row"><span class="cart-item-name">${t.emoji} ${esc(t.name)}</span><span style="display:flex;align-items:center;"><span class="cart-item-qty">${qty}件</span><span class="cart-item-del" onclick="removeCart(${id})">✕</span></span></div>`;
+    let badge='';
+    if(periodAvail&&periodAvail[t.name]!==undefined){
+      const a=periodAvail[t.name];
+      badge=a>=qty?`<span class="cart-avail ok">此期間可借 ${a}</span>`:`<span class="cart-avail bad">此期間只剩 ${a}</span>`;
+    }
+    return`<div class="cart-item-row"><span class="cart-item-name">${t.emoji} ${esc(t.name)}</span><span style="display:flex;align-items:center;">${badge}<span class="cart-item-qty">${qty}件</span><span class="cart-item-del" onclick="removeCart(${id})">✕</span></span></div>`;
   }).join('');
 }
 
@@ -996,76 +1055,215 @@ function backFromForm(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ===== 借用期間可借數量（依日期區間逐日計算，含已預約） =====
+var periodAvail=null, availSeq=0; // var：避免初始化順序造成 TDZ 錯誤
+async function checkPeriodAvailability(){
+  const b=document.getElementById('f_borrow_date').value;
+  const r=document.getElementById('f_return_date').value;
+  const note=document.getElementById('availNote');
+  periodAvail=null;
+  syncPeriodBar(b,r);
+  const pStatus=document.getElementById('periodStatus');
+  const finish=()=>{renderCartSummary();refreshCatalog();};
+  if(!b||!r){
+    note.className='avail-note';
+    pStatus.className='period-status';pStatus.textContent='未選日期：顯示今天的庫存。';
+    finish();return;
+  }
+  if(r<b){
+    note.className='avail-note warn';note.textContent='歸還日期不可早於借用日期';
+    pStatus.className='period-status err';pStatus.textContent='歸還日期不可早於借用日期';
+    finish();return;
+  }
+  if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL==="YOUR_APPS_SCRIPT_URL_HERE"){note.className='avail-note';finish();return;}
+  pStatus.className='period-status';pStatus.textContent='⏳ 查詢這段期間的可借數量…';
+  const seq=++availSeq;
+  note.className='avail-note loading';note.textContent='⏳ 查詢這段期間的可借數量…';
+  try{
+    const res=await fetch(APPS_SCRIPT_URL+'?action=getAvailability&borrowDate='+b+'&returnDate='+r+'&_ts='+Date.now(),{method:'GET',mode:'cors',redirect:'follow',cache:'no-store'});
+    const data=await res.json();
+    if(seq!==availSeq)return; // 使用者已改日期，丟棄舊結果
+    if(!data.success)throw new Error(data.message||'查詢失敗');
+    periodAvail={};
+    data.items.forEach(it=>{periodAvail[it.name]=it.available;});
+    const short=Object.entries(cart).map(([id,qty])=>{
+      const t=TOOLS.find(x=>x.id===parseInt(id));
+      if(!t||periodAvail[t.name]===undefined)return null;
+      return periodAvail[t.name]<qty?`${t.name}（需要 ${qty}，只剩 ${periodAvail[t.name]}）`:null;
+    }).filter(Boolean);
+    pStatus.className='period-status on';
+    const days=loanDays(b,r);
+    pStatus.textContent=`✅ 已切換為 ${b} ～ ${r}（${days} 天）的可借數量，已預約的教具會一併扣除`+(days>LONG_LOAN_DAYS?'。超過 '+LONG_LOAN_DAYS+' 天屬長期借用，送出後會通知管理員':'');
+    if(short.length){
+      note.className='avail-note warn';
+      note.innerHTML='⚠️ 這段期間數量不足（已被借用或預約）：<br>'+short.map(esc).join('<br>')+'<br>請調整日期，或移除該教具。';
+    }else{
+      note.className='avail-note ok';
+      note.textContent='✅ 這段期間所選教具都可借用'+(loanDays(b,r)>LONG_LOAN_DAYS?`（共 ${loanDays(b,r)} 天，屬長期借用，送出後會同步通知管理員）`:'');
+    }
+  }catch(e){
+    if(seq!==availSeq)return;
+    periodAvail=null;
+    note.className='avail-note';
+    pStatus.className='period-status err';pStatus.textContent='查詢失敗，暫時顯示今天的庫存（送出時系統仍會檢查）';
+  }
+  finish();
+}
+
+// 頂部期間列 ↔ 申請表日期 同步
+function syncPeriodBar(b,r){
+  const pb=document.getElementById('p_borrow'), pr=document.getElementById('p_return');
+  if(!pb)return;
+  // 申請表借用日預設是今天；只有兩個日期都選了才帶到期間列
+  if(b&&r){pb.value=b;pr.value=r;}
+  pr.min=pb.value||today;
+}
+function onPeriodPick(){
+  const b=document.getElementById('p_borrow').value;
+  const r=document.getElementById('p_return').value;
+  const pr=document.getElementById('p_return');
+  pr.min=b||today;
+  if(b&&r){
+    document.getElementById('f_borrow_date').value=b;
+    document.getElementById('f_return_date').value=r;
+    document.getElementById('f_return_date').min=b;
+    checkPeriodAvailability();
+  }else{
+    const st=document.getElementById('periodStatus');
+    st.className='period-status';
+    st.textContent=b?'請再選歸還日期':'未選日期：顯示今天的庫存。';
+  }
+}
+function clearPeriod(){
+  document.getElementById('p_borrow').value='';
+  document.getElementById('p_return').value='';
+  document.getElementById('f_borrow_date').value=today;
+  document.getElementById('f_return_date').value='';
+  checkPeriodAvailability();
+}
+// 重新畫教具卡（不捲動畫面）
+function refreshCatalog(){
+  if(document.getElementById('formSection').classList.contains('show'))return; // 正在填申請表時不重畫教具卡
+  if(currentTab===2&&typeof browseInited!=='undefined'&&browseInited)renderBrowse();
+  const box=document.getElementById('resultsBox');
+  if(currentTab===1&&box&&box.style.display==='block'&&document.getElementById('queryInput').value.trim())doSearch(true);
+}
+
+// ===== 欄位錯誤標示 =====
+function clearFieldErrors(){
+  document.querySelectorAll('.field-error').forEach(el=>el.classList.remove('field-error'));
+  document.querySelectorAll('.group-error').forEach(el=>el.classList.remove('group-error'));
+}
+function markField(id){const el=document.getElementById(id);if(el)el.classList.add('field-error');return el;}
+function markGroup(name){
+  const box=document.querySelector(`input[name="${name}"]`)?.closest('.radio-group,.check-group');
+  if(box)box.classList.add('group-error');
+  return box;
+}
+document.addEventListener('input',e=>{
+  if(e.target.classList&&e.target.classList.contains('field-error'))e.target.classList.remove('field-error');
+});
+document.addEventListener('change',e=>{
+  const g=e.target.closest&&e.target.closest('.group-error');
+  if(g)g.classList.remove('group-error');
+});
+
 // ===== 送出表單 =====
 async function submitForm(){
-  const unit=document.getElementById('f_unit').value.trim();
-  const name=document.getElementById('f_name').value.trim();
-  const email=document.getElementById('f_email').value.trim();
-  const borrowDate=document.getElementById('f_borrow_date').value;
-  const returnDate=document.getElementById('f_return_date').value;
-  const headcount=document.getElementById('f_headcount').value;
+  clearFieldErrors();
+  const val=id=>document.getElementById(id).value.trim();
+  const unit=val('f_unit'), name=val('f_name'), email=val('f_email'), ext=val('f_ext');
+  const borrowDate=val('f_borrow_date'), returnDate=val('f_return_date');
+  const lecturer=val('f_lecturer'), topic=val('f_topic'), headcount=val('f_headcount');
   const purposes=Array.from(document.querySelectorAll('input[name="purpose"]:checked'));
   const jobTypes=[...document.querySelectorAll('input[name="job"]:checked')].map(c=>c.value);
   const targets=[...document.querySelectorAll('input[name="target"]:checked')].map(c=>c.value);
-  if(!unit){alert('請填寫單位');return;}
-  if(!name){alert('請填寫姓名');return;}
-  if(!email||!email.includes('@')){alert('請填寫正確電子郵件');return;}
-  if(!borrowDate){alert('請選擇借用日期');return;}
-  if(!returnDate||returnDate<borrowDate){alert('請選擇正確歸還日期');return;}
-  if(!purposes.length){alert('請選擇借用用途');return;}
-  if(!headcount||parseInt(headcount)<1){alert('請填寫使用人次');return;}
-  if(!jobTypes.length){alert('請選擇使用職類別');return;}
-  if(!targets.length){alert('請選擇使用對象');return;}
+  const purposeOtherChecked=!!document.querySelector('input[name="purpose"][value="其他"]:checked');
+  const targetOtherChecked=!!document.querySelector('input[name="target"][value="其他"]:checked');
+
   if(!Object.keys(cart).length){alert('請先選擇要借用的教具');return;}
-  let purposeVals=purposes.map(p=>p.value==='其他'?'其他：'+(document.getElementById('purposeOther').value.trim()||'其他'):p.value);
-  let purposeVal=purposeVals.join('、');
-  let targetVals=[...targets];
-  if(document.querySelector('input[name="target"][value="其他"]:checked')){
-    const o=document.getElementById('targetOther').value.trim();
-    if(o)targetVals=targetVals.map(v=>v==='其他'?'其他：'+o:v);
+
+  // 逐欄檢查，全部列出來，一次告訴使用者
+  const errs=[]; let firstEl=null;
+  const fail=(msg,el)=>{errs.push(msg);if(!firstEl&&el)firstEl=el;};
+  if(!unit)fail('單位',markField('f_unit'));
+  if(!name)fail('姓名',markField('f_name'));
+  if(!email)fail('電子郵件',markField('f_email'));
+  else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))fail('電子郵件格式不正確',markField('f_email'));
+  if(!ext)fail('分機',markField('f_ext'));
+  else if(!/^[0-9#\-]{3,10}$/.test(ext))fail('分機請填數字（3–10 碼）',markField('f_ext'));
+  if(!borrowDate)fail('借用日期',markField('f_borrow_date'));
+  if(!returnDate)fail('歸還日期',markField('f_return_date'));
+  else if(borrowDate&&returnDate<borrowDate)fail('歸還日期不可早於借用日期',markField('f_return_date'));
+  if(!purposes.length)fail('借用用途',markGroup('purpose'));
+  else if(purposeOtherChecked&&!val('purposeOther'))fail('請說明「其他」用途',markField('purposeOther'));
+  if(!lecturer)fail('講師（沒有請填「無」）',markField('f_lecturer'));
+  if(!topic)fail('主題',markField('f_topic'));
+  const hc=Number(headcount);
+  if(!headcount)fail('使用人次',markField('f_headcount'));
+  else if(!Number.isInteger(hc)||hc<1||hc>999)fail('使用人次請填 1 以上的整數',markField('f_headcount'));
+  if(!jobTypes.length)fail('使用職類別',markGroup('job'));
+  if(!targets.length)fail('使用對象',markGroup('target'));
+  else if(targetOtherChecked&&!val('targetOther'))fail('請說明「其他」使用對象',markField('targetOther'));
+
+  if(errs.length){
+    alert('以下欄位尚未填寫或格式不正確：\n\n• '+errs.join('\n• '));
+    if(firstEl){firstEl.scrollIntoView({behavior:'smooth',block:'center'});if(firstEl.focus)setTimeout(()=>firstEl.focus(),300);}
+    return;
   }
+
+  let purposeVal=purposes.map(p=>p.value==='其他'?'其他：'+val('purposeOther'):p.value).join('、');
+  let targetVals=targets.map(v=>v==='其他'?'其他：'+val('targetOther'):v);
   const cartItemsArr=Object.entries(cart).map(([id,qty])=>{
     const t=TOOLS.find(x=>x.id===parseInt(id));
     return t?{name:t.name,qty:qty}:null;
   }).filter(Boolean);
   const cartItems=cartItemsArr.map(i=>`${i.name}×${i.qty}`).join('、');
   const payload={
-    action:'submitBorrow',unit,name,email,
-    ext:document.getElementById('f_ext').value.trim(),
+    action:'submitBorrow',unit,name,email,ext,
     borrowDate,returnDate,purpose:purposeVal,
-    instructor:document.getElementById('f_lecturer').value.trim(),
-    topic:document.getElementById('f_topic').value.trim(),
-    headcount:parseInt(headcount),
+    instructor:lecturer,topic,
+    headcount:hc,
     jobTypes:jobTypes,
     targets:targetVals,
     cart:cartItemsArr,
     submitTime:new Date().toLocaleString('zh-TW')
   };
   const btn=document.getElementById('submitBtn');
+  const resetBtn=()=>{btn.disabled=false;btn.textContent='📤 送出借用申請';};
   btn.disabled=true;btn.textContent='⏳ 送出中…';
+  let result={success:true,message:''};
   try{
     if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL==="YOUR_APPS_SCRIPT_URL_HERE"){
       await new Promise(r=>setTimeout(r,700));
     }else{
-      // 用 GET + query string 傳資料，避免 CORS 問題
-      const params = new URLSearchParams({data: JSON.stringify(payload)});
-      await fetch(APPS_SCRIPT_URL + '?' + params.toString(), {
-        method:'GET',
-        mode:'no-cors'
-      });
+      // 改成讀取後端回覆（原本 no-cors 看不到結果，被擋下也會顯示成功）
+      const params=new URLSearchParams({data:JSON.stringify(payload)});
+      const res=await fetch(APPS_SCRIPT_URL+'?'+params.toString(),{method:'GET',mode:'cors',redirect:'follow',cache:'no-store'});
+      result=await res.json();
     }
-    document.getElementById('formSection').classList.remove('show');
-    document.getElementById('cartBar').classList.remove('show');
-    const box=document.getElementById('successBox');
-    box.classList.add('show');
-    document.getElementById('successDesc').innerHTML=
-      `<strong>${esc(name)}</strong> 您好，借用申請已完成！<br><br>📦 ${esc(cartItems)}<br>📅 歸還日期：${returnDate}<br>📧 確認信將寄至：${esc(email)}`;
-    box.scrollIntoView({behavior:'smooth',block:'start'});
-    cart={};renderCartBar();track('submit',cartItems);
   }catch(e){
-    alert('送出失敗，請稍後再試或聯繫管理員（分機6301）');
-    btn.disabled=false;btn.textContent='📤 送出借用申請';
+    alert('送出失敗，網路或系統暫時無法連線。\n請稍後再試，或聯繫管理員（分機5050）。');
+    resetBtn();return;
   }
+  if(!result.success){
+    // 後端擋下：日期衝突、欄位不完整等，原因直接顯示給使用者，購物車保留不清空
+    alert(result.message||'送出失敗，請聯繫管理員（分機5050）');
+    resetBtn();
+    checkPeriodAvailability();
+    return;
+  }
+  document.getElementById('formSection').classList.remove('show');
+  document.getElementById('cartBar').classList.remove('show');
+  const box=document.getElementById('successBox');
+  box.classList.add('show');
+  document.getElementById('successDesc').innerHTML=
+    `<strong>${esc(name)}</strong> 您好，${esc(result.message||'借用申請已完成！')}<br><br>📦 ${esc(cartItems)}<br>📅 借用期間：${borrowDate} ～ ${returnDate}<br>📧 確認信將寄至：${esc(email)}`;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  cart={};renderCartBar();track('submit',cartItems);
+  periodAvail=null;document.getElementById('availNote').className='avail-note';
+  document.getElementById('p_borrow').value='';document.getElementById('p_return').value='';
+  const st=document.getElementById('periodStatus');st.className='period-status';st.textContent='未選日期：顯示今天的庫存。';
 }
 
 function startOver(){
