@@ -158,6 +158,14 @@ textarea::placeholder{color:#94a3b8;}
 
 /* 管理員主介面 */
 .admin-panel{display:none;}
+.admin-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px;}
+.admin-link{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--navy);box-shadow:0 1px 8px rgba(0,0,0,.05);transition:border-color .2s,transform .1s;}
+.admin-link:hover{border-color:var(--purple);}
+.admin-link:active{transform:scale(.98);}
+.admin-link-icon{font-size:1.4rem;}
+.admin-link-text{display:flex;flex-direction:column;flex:1;min-width:0;font-size:.85rem;}
+.admin-link-text small{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.admin-link-go{color:var(--purple);font-weight:700;}
 .admin-header{background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border-radius:14px;padding:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
 .admin-welcome{font-size:.88rem;font-weight:700;}
 .admin-welcome-sub{font-size:.7rem;opacity:.8;margin-top:2px;}
@@ -383,6 +391,15 @@ textarea::placeholder{color:#94a3b8;}
         <div class="stat-num red" id="statOverdue">-</div>
         <div class="stat-label">逾期未還</div>
       </div>
+    </div>
+
+    <!-- 管理捷徑：開新分頁，不影響借用系統本身 -->
+    <div class="admin-links">
+      <a class="admin-link" href="https://d043606-cmd.github.io/clinical-skills-room/dashboard.html" target="_blank" rel="noopener">
+        <span class="admin-link-icon">📊</span>
+        <span class="admin-link-text"><strong>使用統計儀表板</strong><small>教室使用、外借職類、滿意度</small></span>
+        <span class="admin-link-go">↗</span>
+      </a>
     </div>
 
 
