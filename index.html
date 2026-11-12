@@ -224,7 +224,10 @@ textarea::placeholder{color:#94a3b8;}
 .btn-confirm-return.done{background:var(--green);cursor:default;}
 .admin-empty{text-align:center;padding:32px 20px;color:var(--muted);font-size:.88rem;}
 .admin-section-title{font-size:.8rem;font-weight:700;color:var(--slate);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.stat-num.purple{color:#7c3aed;}
+.stat-card.clickable{cursor:pointer;transition:box-shadow .2s;}
+.stat-card.clickable:hover{box-shadow:0 2px 12px rgba(124,58,237,.18);}
 .stat-card{background:#fff;border-radius:12px;padding:12px 8px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.06);}
 .stat-num{font-size:1.4rem;font-weight:700;color:var(--teal);}
 .stat-num.red{color:var(--red);}
@@ -424,6 +427,10 @@ textarea::placeholder{color:#94a3b8;}
       <div class="stat-card">
         <div class="stat-num red" id="statOverdue">-</div>
         <div class="stat-label">逾期未還</div>
+      </div>
+      <div class="stat-card clickable" onclick="document.getElementById('resvTitle').scrollIntoView({behavior:'smooth',block:'start'})" title="查看已預約清單">
+        <div class="stat-num purple" id="statResv">-</div>
+        <div class="stat-label">已預約</div>
       </div>
     </div>
 
@@ -1542,6 +1549,7 @@ async function loadAdminData(){
     document.getElementById('statBorrowing').textContent=0;
     document.getElementById('statToday').textContent=0;
     document.getElementById('statOverdue').textContent=0;
+    document.getElementById('statResv').textContent=0;
     return;
   }
   try{
@@ -1564,6 +1572,7 @@ async function loadAdminData(){
     document.getElementById('statBorrowing').textContent=items.length;
     document.getElementById('statToday').textContent=items.filter(r=>r.returnDate===today2).length;
     document.getElementById('statOverdue').textContent=items.filter(r=>r.overdue).length;
+    document.getElementById('statResv').textContent=(resvData.items||[]).length;
   }catch(e){
     document.getElementById('returnList').innerHTML='<div class="admin-empty">載入失敗，請檢查網路連線</div>';
     document.getElementById('reservationList').innerHTML='<div class="admin-empty">載入失敗，請檢查網路連線</div>';
