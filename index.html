@@ -158,6 +158,40 @@ textarea::placeholder{color:#94a3b8;}
 
 /* 管理員主介面 */
 .admin-panel{display:none;}
+.sched-btn{border:1px solid #c4b5fd;background:#f5f3ff;color:#6d28d9;border-radius:99px;padding:1px 8px;font-size:.66rem;font-weight:600;cursor:pointer;margin-left:6px;white-space:nowrap;font-family:inherit;}
+.sched-btn:hover{background:#ede9fe;}
+.sched-modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;}
+.sched-modal.show{display:flex;}
+.sched-box{background:#fff;border-radius:18px;width:100%;max-width:420px;max-height:90vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);}
+.sched-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:14px 16px 8px;}
+.sched-title{font-size:.9rem;font-weight:700;color:var(--navy);line-height:1.4;}
+.sched-sub{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.sched-close{border:none;background:#f1f5f9;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:.9rem;flex-shrink:0;}
+.sched-nav{display:flex;align-items:center;justify-content:space-between;padding:0 16px 6px;}
+.sched-nav button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;font-family:inherit;}
+.sched-nav span{font-size:.8rem;font-weight:700;color:var(--navy);}
+.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 12px;}
+.sched-wd{text-align:center;font-size:.62rem;color:#94a3b8;padding:2px 0;}
+.sched-day{border-radius:8px;padding:4px 0 3px;text-align:center;cursor:pointer;border:2px solid transparent;font-family:inherit;background:none;}
+.sched-day .n{font-size:.74rem;font-weight:600;display:block;}
+.sched-day .a{font-size:.58rem;display:block;margin-top:1px;}
+.sched-day.ok{background:#ecfdf5;color:#047857;}
+.sched-day.short{background:#fef9c3;color:#a16207;}
+.sched-day.none{background:#fee2e2;color:#b91c1c;}
+.sched-day.past{background:#f8fafc;color:#cbd5e1;cursor:default;}
+.sched-day.blank{visibility:hidden;cursor:default;}
+.sched-day.sel{border-color:#7c3aed;}
+.sched-day.today .n{text-decoration:underline;}
+.sched-legend{display:flex;flex-wrap:wrap;gap:10px;padding:8px 16px 4px;font-size:.66rem;color:#334155;}
+.sched-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:3px;vertical-align:-1px;}
+.sched-pick{margin:8px 16px;padding:8px 10px;border-radius:10px;background:#f5f3ff;font-size:.74rem;color:#4c1d95;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.sched-pick button{border:none;background:#7c3aed;color:#fff;border-radius:8px;padding:5px 12px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.sched-pick button:disabled{background:#c4b5fd;cursor:not-allowed;}
+.sched-list{padding:4px 16px 16px;font-size:.72rem;color:#334155;}
+.sched-list .t{font-weight:700;margin:6px 0 4px;color:var(--navy);}
+.sched-list .p{padding:4px 8px;border-left:3px solid #f87171;background:#fff7f7;border-radius:0 6px 6px 0;margin-bottom:4px;}
+.sched-list .p.r{border-left-color:#a78bfa;background:#faf5ff;}
+.avail-note .use-btn{margin-top:6px;border:none;background:#7c3aed;color:#fff;border-radius:8px;padding:4px 10px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:inherit;}
 .admin-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px;}
 .admin-link{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--navy);box-shadow:0 1px 8px rgba(0,0,0,.05);transition:border-color .2s,transform .1s;}
 .admin-link:hover{border-color:var(--purple);}
@@ -429,6 +463,8 @@ textarea::placeholder{color:#94a3b8;}
         <div style="display:flex;align-items:center;gap:4px;font-size:.65rem;color:#334155;"><span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>今日到期</div>
         <div style="display:flex;align-items:center;gap:4px;font-size:.65rem;color:#334155;"><span style="width:8px;height:8px;border-radius:50%;background:#4285f4;display:inline-block;"></span>歸還提醒</div>
         <div style="display:flex;align-items:center;gap:4px;font-size:.65rem;color:#334155;"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;"></span>逾期未還</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:.65rem;color:#334155;"><span style="width:8px;height:8px;border-radius:50%;background:#8b5cf6;display:inline-block;"></span>已預約</div>
+        <div style="width:100%;font-size:.62rem;color:#94a3b8;">點日期可看當天的借用與預約名單</div>
       </div>
       <!-- 點擊日期後的事件明細 -->
       <div id="calDetail" style="display:none;padding:10px 14px 14px;border-top:1px solid #e2e8f0;"></div>
@@ -440,7 +476,7 @@ textarea::placeholder{color:#94a3b8;}
     </div>
 
     <!-- 已預約清單（尚未到借用日、還沒扣庫存的預約） -->
-    <div class="admin-section-title" style="margin-top:20px;">📅 已預約清單</div>
+    <div class="admin-section-title" style="margin-top:20px;" id="resvTitle">📅 已預約清單</div>
     <div class="return-list" id="reservationList">
       <div class="admin-empty">⏳ 載入中…</div>
     </div>
@@ -454,6 +490,7 @@ textarea::placeholder{color:#94a3b8;}
         <button onclick="setStockFilter('overdue')" id="sf_overdue" style="flex-shrink:0;padding:4px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-size:.7rem;font-weight:500;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;">🔴 逾期</button>
         <button onclick="setStockFilter('out')" id="sf_out" style="flex-shrink:0;padding:4px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-size:.7rem;font-weight:500;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;">🟡 借出中</button>
         <button onclick="setStockFilter('ok')" id="sf_ok" style="flex-shrink:0;padding:4px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-size:.7rem;font-weight:500;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;">🟢 可借</button>
+        <button onclick="setStockFilter('resv')" id="sf_resv" style="flex-shrink:0;padding:4px 12px;border-radius:20px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-size:.7rem;font-weight:500;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;">🟣 有預約</button>
       </div>
       <!-- 表格 -->
       <div style="overflow-x:auto;padding:10px 0 4px;">
@@ -775,6 +812,7 @@ loadLiveStock().then(()=>{
 });
 track('pageview','進入系統');
 
+setTimeout(()=>loadSchedule(),1500); // 背景預先載入預約時段，打開「📅 時段」時就不用等
 async function loadLiveStock(){
   if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL==="YOUR_APPS_SCRIPT_URL_HERE") return;
   try{
@@ -902,7 +940,8 @@ function recCard(t,isSecondary){
   const imgHtml=imgUrl
     ?`<img src="${imgUrl}" alt="${t.name}" loading="lazy" style="pointer-events:none;" onerror="this.style.display='none'">`
     :`<span style="font-size:2rem">${t.emoji}</span>`;
-  const stockHtml=`<span class="stock-txt ${isOut?'out':'ok'}">${isOut?(periodOn()?'● 此期間已被借用/預約':'● 借出中'):(periodOn()?`● 此期間可借 ${available} 件`:`● 可借 ${available} 件`)}</span>`;
+  const schedBtn=`<button class="sched-btn" onclick="openSchedule(${t.id});event.stopPropagation();">📅 時段</button>`;
+  const stockHtml=`<span class="stock-txt ${isOut?'out':'ok'}">${isOut?(periodOn()?'● 此期間已被借用/預約':'● 借出中'):(periodOn()?`● 此期間可借 ${available} 件`:`● 可借 ${available} 件`)}</span>${schedBtn}`;
   const imgClickable = imgUrl ? 'onclick="openLightbox(getImg(\'' + t.name.replace(/\'/, "\\\'" ) + '\'),\'' + t.name.replace(/\'/, "\\\'" ) + '\');event.stopPropagation();" style="cursor:zoom-in;"' : '';
 
   let action;
@@ -999,7 +1038,7 @@ function browseCard(t){
       <div class="b-name">${esc(t.name)}</div>
       <div class="tool-desc">${esc(t.desc)}</div>
       ${noteHtml}
-      <div class="b-stock ${isOut?'out':'ok'}">${stockText}</div>
+      <div class="b-stock ${isOut?'out':'ok'}">${stockText}<button class="sched-btn" onclick="openSchedule(${t.id});event.stopPropagation();">📅 時段</button></div>
       <div class="b-row">${action}</div>
     </div>
   </div>`;
@@ -1062,7 +1101,7 @@ function renderCartSummary(){
       const a=periodAvail[t.name];
       badge=a>=qty?`<span class="cart-avail ok">此期間可借 ${a}</span>`:`<span class="cart-avail bad">此期間只剩 ${a}</span>`;
     }
-    return`<div class="cart-item-row"><span class="cart-item-name">${t.emoji} ${esc(t.name)}</span><span style="display:flex;align-items:center;">${badge}<span class="cart-item-qty">${qty}件</span><span class="cart-item-del" onclick="removeCart(${id})">✕</span></span></div>`;
+    return`<div class="cart-item-row"><span class="cart-item-name">${t.emoji} ${esc(t.name)}</span><span style="display:flex;align-items:center;">${badge}<button class="sched-btn" style="margin:0 8px 0 0" onclick="openSchedule(${t.id})">📅 時段</button><span class="cart-item-qty">${qty}件</span><span class="cart-item-del" onclick="removeCart(${id})">✕</span></span></div>`;
   }).join('');
 }
 
@@ -1113,7 +1152,20 @@ async function checkPeriodAvailability(){
     pStatus.textContent=`✅ 已切換為 ${b} ～ ${r}（${days} 天）的可借數量，已預約的教具會一併扣除`+(days>LONG_LOAN_DAYS?'。超過 '+LONG_LOAN_DAYS+' 天屬長期借用，送出後會通知管理員':'');
     if(short.length){
       note.className='avail-note warn';
-      note.innerHTML='⚠️ 這段期間數量不足（已被借用或預約）：<br>'+short.map(esc).join('<br>')+'<br>請調整日期，或移除該教具。';
+      await loadSchedule();
+      if(seq!==availSeq)return;
+      let detail='';
+      if(scheduleData){
+        Object.entries(cart).forEach(([id,qty])=>{
+          const t=TOOLS.find(x=>x.id===parseInt(id));
+          if(!t||!scheduleData[t.name]||periodAvail[t.name]>=qty)return;
+          const ps=scheduleData[t.name].periods.filter(p=>p.start<=r&&p.end>=b);
+          if(ps.length)detail+=`<br>　${esc(t.name)} 已被預約／借用：${ps.map(periodText).join('；')}`;
+        });
+      }
+      const days=loanDays(b,r), sug=suggestStart(b,days);
+      const sugHtml=sug?`<br>💡 最近可借：${fmtMD(sug)} 起（借 ${days} 天）<br><button type="button" class="use-btn" onclick="applyDates('${sug}','${addDays(sug,days-1)}')">改成 ${fmtMD(sug)}～${fmtMD(addDays(sug,days-1))}</button>`:'';
+      note.innerHTML='⚠️ 這段期間數量不足：<br>'+short.map(esc).join('<br>')+detail+sugHtml+'<br><span style="font-size:.72rem">也可以點教具旁的「📅 時段」看哪幾天有空。</span>';
     }else{
       note.className='avail-note ok';
       note.textContent='✅ 這段期間所選教具都可借用'+(loanDays(b,r)>LONG_LOAN_DAYS?`（共 ${loanDays(b,r)} 天，屬長期借用，送出後會同步通知管理員）`:'');
@@ -1165,6 +1217,117 @@ function refreshCatalog(){
   const box=document.getElementById('resultsBox');
   if(currentTab===1&&box&&box.style.display==='block'&&document.getElementById('queryInput').value.trim())doSearch(true);
 }
+
+
+// ===== 教具預約時段（借用者用：只有日期與數量，不含姓名） =====
+var scheduleData=null, scheduleLoading=null;
+const SCHED_DAYS=120; // 一次載入今天起 120 天
+function loadSchedule(force){
+  if(scheduleLoading&&!force)return scheduleLoading;
+  if(!APPS_SCRIPT_URL||APPS_SCRIPT_URL==="YOUR_APPS_SCRIPT_URL_HERE")return Promise.resolve(null);
+  const s=todayTaipei(), e=addDays(s,SCHED_DAYS);
+  scheduleLoading=fetch(APPS_SCRIPT_URL+'?action=getSchedule&start='+s+'&end='+e+'&_ts='+Date.now(),{method:'GET',mode:'cors',redirect:'follow',cache:'no-store'})
+    .then(r=>r.json()).then(d=>{
+      if(!d.success)throw new Error(d.message||'');
+      scheduleData={}; d.items.forEach(it=>{scheduleData[it.name]=it;});
+      return scheduleData;
+    }).catch(()=>{scheduleLoading=null;return null;});
+  return scheduleLoading;
+}
+function schedUsed(name,day){
+  const it=scheduleData&&scheduleData[name]; if(!it)return 0;
+  return it.periods.reduce((a,p)=>a+(p.start<=day&&day<=p.end?p.qty:0),0);
+}
+function schedFree(name,day){
+  const it=scheduleData&&scheduleData[name]; if(!it)return null;
+  return Math.max(0,it.max-schedUsed(name,day));
+}
+function fmtMD(d){return parseInt(d.slice(5,7))+'/'+parseInt(d.slice(8,10));}
+function periodText(p){
+  return p.overdue?`${fmtMD(p.start)} 起借出 ${p.qty} 件（尚未歸還）`:`${fmtMD(p.start)}～${fmtMD(p.end)} 借出 ${p.qty} 件`;
+}
+// 從 fromDate 隔天起，找第一個「同樣天數、購物車每項都夠借」的起始日（最多 90 天）
+function suggestStart(fromDate,days){
+  if(!scheduleData)return '';
+  const need={};
+  Object.entries(cart).forEach(([id,q])=>{const t=TOOLS.find(x=>x.id===parseInt(id));if(t)need[t.name]=(need[t.name]||0)+q;});
+  const names=Object.keys(need).filter(n=>scheduleData[n]);
+  if(names.some(n=>need[n]>scheduleData[n].max))return '';
+  for(let k=1;k<=90;k++){
+    const st=addDays(fromDate,k);
+    let ok=true;
+    for(let j=0;j<days&&ok;j++){const d=addDays(st,j);ok=names.every(n=>schedFree(n,d)>=need[n]);}
+    if(ok)return st;
+  }
+  return '';
+}
+function applyDates(b,r){
+  document.getElementById('p_borrow').value=b;
+  document.getElementById('p_return').value=r;
+  onPeriodPick();
+}
+
+let schedTool=null, schedOffset=0, schedSelA='', schedSelB='';
+async function openSchedule(toolId){
+  schedTool=TOOLS.find(x=>x.id===toolId); if(!schedTool)return;
+  schedOffset=0; schedSelA=''; schedSelB='';
+  const fb=document.getElementById('f_borrow_date').value, fr=document.getElementById('f_return_date').value;
+  const pb=document.getElementById('p_borrow').value, pr=document.getElementById('p_return').value;
+  if(pb&&pr){schedSelA=pb;schedSelB=pr;}
+  else if(document.getElementById('formSection').classList.contains('show')&&fb&&fr){schedSelA=fb;schedSelB=fr;}
+  document.getElementById('schedTitle').textContent='📅 '+schedTool.name;
+  document.getElementById('schedSub').textContent='⏳ 載入預約時段中…';
+  document.getElementById('schedGrid').innerHTML='';document.getElementById('schedList').innerHTML='';document.getElementById('schedPick').innerHTML='';
+  document.getElementById('schedModal').classList.add('show');
+  await loadSchedule();
+  if(!scheduleData||!scheduleData[schedTool.name]){
+    document.getElementById('schedSub').textContent='目前無法讀取預約時段，請稍後再試或聯繫管理員（分機5050）';
+    return;
+  }
+  renderSchedule();
+}
+function closeSchedule(){document.getElementById('schedModal').classList.remove('show');}
+function schedMove(dir){schedOffset=Math.max(0,Math.min(2,schedOffset+dir));renderSchedule();}
+function schedNeed(){return cart[schedTool.id]||1;}
+function renderSchedule(){
+  const t=schedTool, it=scheduleData[t.name], need=schedNeed(), today=todayTaipei();
+  document.getElementById('schedSub').textContent=`共 ${it.max} 件｜${cart[t.id]?`您選了 ${need} 件，`:''}格子內數字＝當天可借件數`;
+  // 以本週日為起點，每頁 6 週
+  const d0=new Date(today+'T12:00:00+08:00'); const start=addDays(today,-d0.getDay()+schedOffset*42);
+  const end=addDays(start,41);
+  document.getElementById('schedRange').textContent=`${fmtMD(start)} ～ ${fmtMD(end)}`;
+  const lastDay=addDays(today,SCHED_DAYS);
+  let html=['日','一','二','三','四','五','六'].map(w=>`<div class="sched-wd">${w}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const d=addDays(start,i);
+    if(d>lastDay){html+='<div class="sched-day blank"></div>';continue;}
+    if(d<today){html+=`<div class="sched-day past"><span class="n">${parseInt(d.slice(8))}</span><span class="a">&nbsp;</span></div>`;continue;}
+    const f=schedFree(t.name,d);
+    const cls=f<=0?'none':(f<need?'short':'ok');
+    const inSel=schedSelA&&(schedSelB?(d>=schedSelA&&d<=schedSelB):d===schedSelA);
+    html+=`<button class="sched-day ${cls}${inSel?' sel':''}${d===today?' today':''}" onclick="schedPickDay('${d}')" aria-label="${d} 可借 ${f} 件"><span class="n">${parseInt(d.slice(8))===1||i===0?fmtMD(d):parseInt(d.slice(8))}</span><span class="a">${f<=0?'借完':'剩'+f}</span></button>`;
+  }
+  document.getElementById('schedGrid').innerHTML=html;
+  renderSchedPick();
+  const ps=it.periods.filter(p=>p.end>=today);
+  document.getElementById('schedList').innerHTML=ps.length
+    ?`<div class="t">已被借用／預約的時段</div>`+ps.map(p=>`<div class="p">${periodText(p)}</div>`).join('')+`<div style="color:#94a3b8;margin-top:6px;">只顯示時段與數量；如需協調請聯繫管理員（分機5050）</div>`
+    :`<div class="t">✅ 未來 ${SCHED_DAYS} 天都沒有人借用或預約</div>`;
+}
+function schedPickDay(d){
+  if(!schedSelA||schedSelB||d<schedSelA){schedSelA=d;schedSelB='';}
+  else schedSelB=d;
+  renderSchedule();
+}
+function renderSchedPick(){
+  const box=document.getElementById('schedPick');
+  if(!schedSelA){box.innerHTML='👆 點一下借用日，再點歸還日，就能直接套用';return;}
+  if(!schedSelB){box.innerHTML=`借用日 ${fmtMD(schedSelA)}，請再點歸還日（同一天借還就再點一次 ${fmtMD(schedSelA)}）`;return;}
+  const need=schedNeed(); let ok=true;
+  for(let d=schedSelA;d<=schedSelB;d=addDays(d,1)){if(schedFree(schedTool.name,d)<need){ok=false;break;}}
+  box.innerHTML=`<span>${fmtMD(schedSelA)} → ${fmtMD(schedSelB)}（${loanDays(schedSelA,schedSelB)} 天）${ok?'✅ 夠借':'⚠️ 期間有幾天不夠'}</span><button ${ok?'':'disabled'} onclick="applyDates('${schedSelA}','${schedSelB}');closeSchedule();">套用這段日期</button>`;
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSchedule();});
 
 // ===== 欄位錯誤標示 =====
 function clearFieldErrors(){
@@ -1278,6 +1441,7 @@ async function submitForm(){
     `<strong>${esc(name)}</strong> 您好，${esc(result.message||'借用申請已完成！')}<br><br>📦 ${esc(cartItems)}<br>📅 借用期間：${borrowDate} ～ ${returnDate}<br>📧 確認信將寄至：${esc(email)}`;
   box.scrollIntoView({behavior:'smooth',block:'start'});
   cart={};renderCartBar();track('submit',cartItems);
+  scheduleLoading=null;scheduleData=null;loadSchedule();
   periodAvail=null;document.getElementById('availNote').className='avail-note';
   document.getElementById('p_borrow').value='';document.getElementById('p_return').value='';
   const st=document.getElementById('periodStatus');st.className='period-status';st.textContent='未選日期：顯示今天的庫存。';
@@ -1390,8 +1554,9 @@ async function loadAdminData(){
     const resvData=await resvRes.json();
     renderReservationList(resvData.items||[]);
     lastPendingRecords = data.items||[]; // 快取目前清單，供確認歸還後局部刷新庫存用
+    lastReservations = resvData.items||[]; // 庫存總表標示預約用（純顯示，不影響庫存數字）
     renderAdminList(data.items||[]);
-    initCalendar(data.items||[]);
+    initCalendar(data.items||[], resvData.items||[]);
     stockData = buildStockData(data.items||[]);
     renderStockTable();
     const items=data.items||[];
@@ -1597,7 +1762,7 @@ let lastPendingRecords = [];
 
 function setStockFilter(f){
   stockFilter = f;
-  ['all','overdue','out','ok'].forEach(k => {
+  ['all','overdue','out','ok','resv'].forEach(k => {
     const btn = document.getElementById(`sf_${k}`);
     if(!btn) return;
     const isActive = k === f;
@@ -1608,6 +1773,17 @@ function setStockFilter(f){
   renderStockTable();
 }
 
+var lastReservations = [];
+// 從「教具A×2、教具B×1」文字取出某教具的數量（完全比對名稱，避免名稱相近的教具被誤算）
+function qtyInItems(itemsStr, toolName){
+  let q = 0;
+  String(itemsStr||'').split('、').forEach(seg => {
+    const m = seg.trim().match(/^(.*)×(\d+)$/);
+    const nm = m ? m[1].trim() : seg.trim();
+    if(nm === toolName) q += m ? parseInt(m[2]) : 1;
+  });
+  return q;
+}
 function buildStockData(records){
   const today = todayTaipei();
   const list = TOOLS.map(t => {
@@ -1622,7 +1798,12 @@ function buildStockData(records){
       returnDate = r.returnDate || '—';
       status = (r.returnDate && r.returnDate < today) ? 'overdue' : 'out';
     }
-    return { name:t.name, cat:t.cat, available, maxStock, status, borrowerName, returnDate };
+    // 預約（尚未到借用日）：只做標示，不改變「可借」數字與狀態
+    const reservations = (lastReservations||[])
+      .map(r => ({ qty: qtyInItems(r.items, t.name), who: r.name + (r.unit ? `（${r.unit}）` : ''), b: r.borrowDate, e: r.returnDate }))
+      .filter(x => x.qty > 0)
+      .sort((x,y) => x.b < y.b ? -1 : 1);
+    return { name:t.name, cat:t.cat, available, maxStock, status, borrowerName, returnDate, reservations };
   });
   return list;
 }
@@ -1632,7 +1813,7 @@ function renderStockTable(){
   if(!tbody) return;
 
   // 先篩選
-  const filtered = stockData.filter(item => stockFilter==='all' || item.status===stockFilter);
+  const filtered = stockData.filter(item => stockFilter==='all' || (stockFilter==='resv' ? item.reservations && item.reservations.length : item.status===stockFilter));
   if(!filtered.length){
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;font-size:.78rem;">此類別目前無資料</td></tr>`;
     return;
@@ -1701,7 +1882,7 @@ function renderStockTable(){
       const c = cfg[item.status];
       const ac = item.available > 0 ? '#065f46' : '#dc2626';
       html += `<tr style="background:${i%2===0?'#fff':'#fafafa'};border-bottom:1px solid #f1f5f9;">
-        <td style="padding:7px 12px 7px 20px;color:#0f172a;font-size:.76rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(item.name)}">${esc(item.name)}</td>
+        <td style="padding:7px 12px 7px 20px;color:#0f172a;font-size:.76rem;max-width:170px;" title="${esc(item.name)}"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.name)}</div>${(item.reservations||[]).map(rv => `<div style="font-size:.62rem;color:#6d28d9;background:#f5f3ff;border-radius:6px;padding:1px 6px;margin-top:3px;line-height:1.5;">🟣 預約 ${parseInt(rv.b.slice(5,7))}/${parseInt(rv.b.slice(8))}～${parseInt(rv.e.slice(5,7))}/${parseInt(rv.e.slice(8))} ×${rv.qty}　${esc(rv.who)}</div>`).join('')}</td>
         <td style="padding:6px;text-align:center;"><span style="background:${c.bg};color:${c.color};border-radius:8px;padding:2px 7px;font-size:.63rem;font-weight:600;white-space:nowrap;">${c.badge}</span></td>
         <td style="padding:6px;text-align:center;font-weight:700;color:${ac};font-size:.8rem;">${item.available}/${item.maxStock}</td>
         <td style="padding:6px;text-align:center;color:#334155;font-size:.68rem;white-space:nowrap;">${esc(item.borrowerName)}</td>
@@ -1719,9 +1900,20 @@ let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let calEvents = []; // 從 admin data 取得
 
-function initCalendar(records){
-  calEvents = records || [];
+function initCalendar(records, reservations){
+  // kind：loan＝已借出（待確認／借出中），resv＝已預約（尚未到借用日）
+  calEvents = (records || []).map(r => Object.assign({kind:'loan'}, r))
+    .concat((reservations || []).map(r => Object.assign({kind:'resv'}, r)));
   renderCalendar();
+  const n=(reservations||[]).length;
+  const t=document.getElementById('resvTitle');
+  if(t) t.textContent = `📅 已預約清單（${n} 筆）`;
+}
+// 某筆紀錄在 dateStr 這天是否「佔用中」（借出期間或預約期間；逾期未還的延續到今天）
+function calCovers(r, dateStr, todayStr){
+  let end = r.returnDate || r.borrowDate;
+  if(r.kind==='loan' && end < todayStr) end = todayStr;
+  return r.borrowDate <= dateStr && dateStr <= end;
 }
 
 function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
@@ -1735,19 +1927,25 @@ function renderCalendar(){
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
   const todayStr = todayTaipei();
 
-  // 建立事件日期 map
+  // 建立事件日期 map：借出／預約「整段期間」每一天都標記，歸還日另外標提醒
   const eventMap = {};
+  const push=(d,type,r)=>{ (eventMap[d]=eventMap[d]||[]).push({type, record:r}); };
+  const mStart = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const mEnd = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;
   calEvents.forEach(r => {
-    // 標記歸還日
-    const rd = r.returnDate;
-    if(!eventMap[rd]) eventMap[rd] = [];
-    if(rd < todayStr) eventMap[rd].push({type:'overdue', record:r});
-    else if(rd === todayStr) eventMap[rd].push({type:'today', record:r});
-    else eventMap[rd].push({type:'remind', record:r});
-    // 標記借出期間（借用日）
-    const bd = r.borrowDate;
-    if(!eventMap[bd]) eventMap[bd] = [];
-    eventMap[bd].push({type:'borrow', record:r});
+    for(let d=1; d<=daysInMonth; d++){
+      const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if(calCovers(r, ds, todayStr)) push(ds, r.kind==='resv'?'resv':'borrow', r);
+    }
+    if(r.kind==='loan'){
+      const rd = r.returnDate;
+      if(rd >= mStart && rd <= mEnd){
+        if(rd < todayStr) push(rd,'overdue',r);
+        else if(rd === todayStr) push(rd,'today',r);
+        else push(rd,'remind',r);
+      }
+      if(r.returnDate < todayStr && todayStr >= mStart && todayStr <= mEnd) push(todayStr,'overdue',r);
+    }
   });
 
   const grid = document.getElementById('calGrid');
@@ -1765,8 +1963,8 @@ function renderCalendar(){
     // 決定主要顏色優先級：逾期>今日>提醒>借出
     let dotHtml = '';
     const types = [...new Set(evts.map(e=>e.type))];
-    const colorMap = {overdue:'#ef4444',today:'#f59e0b',remind:'#4285f4',borrow:'#34a853'};
-    const priority = ['overdue','today','remind','borrow'];
+    const colorMap = {overdue:'#ef4444',today:'#f59e0b',remind:'#4285f4',borrow:'#34a853',resv:'#8b5cf6'};
+    const priority = ['overdue','today','remind','borrow','resv'];
     priority.forEach(t => {
       if(types.includes(t)){
         dotHtml += `<span style="width:5px;height:5px;border-radius:50%;background:${colorMap[t]};display:inline-block;margin:0 1px;"></span>`;
@@ -1776,7 +1974,7 @@ function renderCalendar(){
     const bgStyle = isToday ? 'background:#e0f2fe;border-radius:50%;' : '';
     const fontStyle = isToday ? 'font-weight:700;color:#0369a1;' : evts.length>0 ? 'font-weight:600;' : 'color:#64748b;';
 
-    html += `<div onclick="showCalDetail('${dateStr}')" style="text-align:center;padding:3px 1px;cursor:${evts.length?'pointer':'default'};">
+    html += `<div onclick="showCalDetail('${dateStr}')" title="${new Set(evts.map(e=>e.record)).size ? new Set(evts.map(e=>e.record)).size+' 筆借用／預約' : ''}" style="text-align:center;padding:3px 1px;cursor:${evts.length?'pointer':'default'};">
       <div style="font-size:.72rem;${fontStyle}${bgStyle}width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto;">${d}</div>
       <div style="display:flex;justify-content:center;min-height:8px;margin-top:1px;">${dotHtml}</div>
     </div>`;
@@ -1786,29 +1984,38 @@ function renderCalendar(){
 
 function showCalDetail(dateStr){
   const detail = document.getElementById('calDetail');
+  const todayStr = todayTaipei();
+  const md = d => d ? (parseInt(d.slice(5,7))+'/'+parseInt(d.slice(8,10))) : '';
   const evts = [];
   calEvents.forEach(r => {
-    if(r.returnDate === dateStr){
-      const todayStr = todayTaipei();
-      const isOverdue = r.returnDate < todayStr;
-      const isDueToday = r.returnDate === todayStr;
-      const label = isOverdue?'🚨 逾期未還':(isDueToday?'⚠️ 今日到期':'📅 應歸還日');
-      const color = isOverdue?'#ef4444':(isDueToday?'#f59e0b':'#4285f4');
-      evts.push({label, record:r, color});
+    if(!calCovers(r, dateStr, todayStr)) return;
+    let label, color;
+    if(r.kind==='resv'){
+      label = r.borrowDate===dateStr ? '🟣 預約．今天開始' : '🟣 預約期間';
+      color = '#8b5cf6';
+    }else if(r.returnDate < todayStr){
+      label = '🚨 逾期未還'; color = '#ef4444';
+    }else if(r.returnDate === dateStr){
+      label = r.returnDate===todayStr ? '⚠️ 今日到期' : '📅 這天應歸還'; color = r.returnDate===todayStr ? '#f59e0b' : '#4285f4';
+    }else if(r.borrowDate === dateStr){
+      label = '📦 借出日'; color = '#34a853';
+    }else{
+      label = '📦 借出中'; color = '#34a853';
     }
-    if(r.borrowDate === dateStr){
-      evts.push({label:'📦 借出日', record:r, color:'#34a853'});
-    }
+    evts.push({label, color, record:r});
   });
 
   if(!evts.length){ detail.style.display='none'; return; }
 
+  // 預約排後面，同類依借用日排序
+  evts.sort((x,y)=> (x.record.kind===y.record.kind?0:(x.record.kind==='resv'?1:-1)) || (x.record.borrowDate<y.record.borrowDate?-1:1));
   detail.style.display = 'block';
-  detail.innerHTML = `<div style="font-size:.75rem;font-weight:700;color:#334155;margin-bottom:8px;">${dateStr} 的借用紀錄</div>` +
+  detail.innerHTML = `<div style="font-size:.75rem;font-weight:700;color:#334155;margin-bottom:8px;">${dateStr} 的借用／預約（${evts.length} 筆）</div>` +
     evts.map(e => `<div style="background:#f8fafc;border-left:3px solid ${e.color};border-radius:0 8px 8px 0;padding:8px 10px;margin-bottom:6px;font-size:.76rem;">
       <div style="font-weight:600;color:${e.color};margin-bottom:2px;">${e.label}</div>
-      <div style="color:#334155;">${esc(e.record.name)}（${esc(e.record.unit)}）</div>
-      <div style="color:#64748b;margin-top:1px;">${esc(e.record.items)}</div>
+      <div style="color:#334155;">${esc(e.record.name)}（${esc(e.record.unit)}）　📞 ${esc(e.record.ext||'—')}</div>
+      <div style="color:#64748b;margin-top:1px;">📦 ${esc(e.record.items)}</div>
+      <div style="color:#64748b;margin-top:1px;">🗓️ ${md(e.record.borrowDate)} ～ ${md(e.record.returnDate)}</div>
     </div>`).join('');
 }
 
@@ -1846,5 +2053,23 @@ function toggleVoice(){
   try{recognition.start();}catch(e){setStatus('⚠️ 語音啟動失敗',true);}
 }
 </script>
+<!-- 教具預約時段（借用者看的：只有日期與數量，不含姓名） -->
+<div class="sched-modal" id="schedModal" onclick="if(event.target===this)closeSchedule()">
+  <div class="sched-box" role="dialog" aria-modal="true" aria-labelledby="schedTitle">
+    <div class="sched-head">
+      <div><div class="sched-title" id="schedTitle"></div><div class="sched-sub" id="schedSub"></div></div>
+      <button class="sched-close" onclick="closeSchedule()" aria-label="關閉">✕</button>
+    </div>
+    <div class="sched-legend">
+      <span><i style="background:#bbf7d0"></i>夠借</span>
+      <span><i style="background:#fde68a"></i>剩餘不夠您要的數量</span>
+      <span><i style="background:#fecaca"></i>已借完</span>
+    </div>
+    <div class="sched-nav"><button onclick="schedMove(-1)" aria-label="上一頁">‹</button><span id="schedRange"></span><button onclick="schedMove(1)" aria-label="下一頁">›</button></div>
+    <div class="sched-grid" id="schedGrid"></div>
+    <div class="sched-pick" id="schedPick"></div>
+    <div class="sched-list" id="schedList"></div>
+  </div>
+</div>
 </body>
 </html>
